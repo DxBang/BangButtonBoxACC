@@ -1,0 +1,68 @@
+#ifndef BANG_h
+	#include "Bang.h"
+#endif
+
+#define LED_BANG_PIN 13
+#define LED_R_PIN 9
+#define LED_G_PIN 10
+#define LED_B_PIN 11
+#define LED_LIGHTS_PIN 3
+
+#define ROTARY_ENCODER_M_CL_PIN 8
+#define ROTARY_ENCODER_M_DT_PIN 16
+
+#define ROTARY_ENCODER_L_CL_PIN 0
+#define ROTARY_ENCODER_L_DT_PIN 1
+
+#define ROTARY_ENCODER_R_CL_PIN 7
+#define ROTARY_ENCODER_R_DT_PIN 2
+
+#define ROTARY_ENCODER_M_SWT_PIN 12
+#define ROTARY_ENCODER_L_SWT_PIN 15
+#define ROTARY_ENCODER_R_SWT_PIN 14
+
+#define NUM_ROWS 3
+#define NUM_COLS 6
+
+/*
+Row 1: A5
+Row 2: 4
+Row 3: 5
+
+Col 1: A0
+Col 2: A1
+Col 3: A2
+Col 4: A3
+Col 5: A4
+Col 6: 6
+*/
+
+#define MATRIX_ROW_1_PIN A5
+#define MATRIX_ROW_2_PIN 4
+#define MATRIX_ROW_3_PIN 5
+
+#define MATRIX_COL_1_PIN A0
+#define MATRIX_COL_2_PIN A1
+#define MATRIX_COL_3_PIN A2
+#define MATRIX_COL_4_PIN A3
+#define MATRIX_COL_5_PIN A4
+#define MATRIX_COL_6_PIN 6
+
+unsigned char buttonsGrid[NUM_ROWS][NUM_COLS] = {
+	{B_BANG, B_ENGINE, B_IGNITION, B_LIGHT, B_WIPER, B_RAINLIGHT},
+	{B_FLASH, B_PIT_LIMITER, B_NAV_SELECT, B_MFD_PITSTOP, B_MFD_POSITIONS, B_MFD_STANDINGS},
+	{B_NAV_DOWN, B_NAV_LEFT, B_NAV_RIGHT, B_NAV_UP, B_MFD_ELECTRONICS, B_NULL},
+};
+unsigned char rowPins[NUM_ROWS] = {
+	MATRIX_ROW_1_PIN,
+	MATRIX_ROW_2_PIN,
+	MATRIX_ROW_3_PIN,
+};
+unsigned char colPins[NUM_COLS] = {
+	MATRIX_COL_1_PIN,
+	MATRIX_COL_2_PIN,
+	MATRIX_COL_3_PIN,
+	MATRIX_COL_4_PIN,
+	MATRIX_COL_5_PIN,
+	MATRIX_COL_6_PIN,
+};
