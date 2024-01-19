@@ -5,6 +5,7 @@
 #include <RotaryEncoder.h>
 #include <Bang.h>
 #include <Game/BangDebug.h>
+#include <Game/AssettoCorsaCompetizione.h>
 
 #define DEBUG 1
 
@@ -175,9 +176,17 @@ Controller controllers[] = {
 		"Bang Debug",
 		new BangDebug(),
 		new Color(0, 1.0, 0.5), // default hsl
-		new Color(0, 0.0, 1.0), // pressed hsl
+		new Color(300, 1.0, 0.0), // pressed hsl
 		new Color(240, 1.0, 0.5), // banged hsl
-		1.0
+		0.5
+	),
+	Controller(
+		"Assetto Corsa Competizione",
+		new AssettoCorsaCompetizione(),
+		new Color(120, 1.0, 0.5), // default hsl
+		new Color(160, 1.0, 1.0), // pressed hsl
+		new Color(240, 1.0, 0.5), // banged hsl
+		0.5
 	)
 };
 unsigned int controllerCount = sizeof(controllers) / sizeof(controllers[0]);
@@ -313,7 +322,7 @@ void sendButton(Key button) {
 	pressCount--;
 	controller.button(button.kchar, pressed);
 }
-void sendRotaryPush(unsigned char button, bool pressed) {
+void sendRotaryPush(unsigned char index, bool pressed) {
 	stayAwake();
 	if (!controllerReady) {
 		if (DEBUG) {
@@ -321,6 +330,7 @@ void sendRotaryPush(unsigned char button, bool pressed) {
 		}
 		return;
 	}
+	unsigned char button = rotaryPushButtonIndex[index];
 	/*
 	Serial.print("Rotary Push: ");
 	Serial.print(button);
@@ -355,6 +365,7 @@ void sendRotaryEncoder(unsigned char index, char direction) {
 	Serial.print(" | ");
 	Serial.println(direction);
 	*/
+	
 	if (controller.isBanged()) {
 		if (index == 0) {
 			// change brightness to up/down to 0-255
@@ -447,40 +458,54 @@ void setBangLED(unsigned char value) {
 }
 
 void feedback() {
-	if (!blinkTimer) {
-		blinkTimer = timer;
+	if (!feedbackTimer) {
+		feedbackTimer = timer;
 	}
-	blinkCount = 0;
+	feedbackCount = 0;
 }
 
 void modeDefault() {
-	setRGB(controller.color->getRGB());
-	visualState = 0;
-	blinkTimer = 0;
+	
+	feedbackTimer = 0;
 	pulseTimer = 0;
 	bangedTimer = 0;
 	prepareChangeProfileTimer = 0;
 	activateChangeProfileTimer = 0;
 	activateChangeProfile = false;
+	setRGB(controller.color->getRGB());
+	// get brightness from controller intensity as float and convert to 0-255 of min and max
+	brightness = min(
+		max(
+			(unsigned char) (controller.getIntensity() * 255),
+			brightnessMinValue
+		),
+		brightnessMaxValue
+	);
+	setLights(brightness);
+	setBangLED(brightness);
 	controller.debang();
 }
 void modeBanged() {
 	setRGB(controller.colorBanged->getRGB());
-	visualState = 2;
 	if (!bangToggleMode) {
 		bangedTimer = timer;
 	}
-	blinkTimer = timer;
+	feedbackTimer = timer;
 	controller.bang();
 }
 void modeActivateChangeProfile() {
-	visualState = 3;
+	if (DEBUG) {
+		Serial.println("ACTIVATE CHANGE PROFILE");
+	}
+	if (activateChangeProfile) {
+		return;
+	}
 	bangedTimer = 0;
 	prepareChangeProfileTimer = 0;
 	activateChangeProfile = true;
 	activateChangeProfileTimer = timer;
 	pulseTimer = timer;
-	bangedState = controller.isBanged();
+	bangedBlink = controller.isBanged();
 	controller.debang();
 }
 
@@ -564,7 +589,7 @@ void setup() {
 		Serial.println("Bang Button Box - Assetto Corsa Competizione!");
 	}
 	buttons.setDebounceTime(50);
-	setController(0);
+	setController(controllerIndex);
 	stayAwake();
 	
 	// TXLED0;
@@ -592,49 +617,56 @@ void loop() {
 			Serial.println(controller.name);
 		}
 	}
-	if (blinkTimer && timer - blinkTimer > blinkInterval) {
-		blinkTimer = timer;
-		blinkState = !blinkState;
-		if (blinkCount >= blinkLimit) {
-			blinkState = false;
-			blinkTimer = 0;
-			blinkCount = 0;
-		}
-		
-		if (!blinkState) {
-			setBangLED(brightness);
+	if (feedbackTimer && timer - feedbackTimer > feedbackInterval) {
+		feedbackTimer = timer;
+		if (feedbackBlink) {
+			setBangLED(0);
+			Serial.println("feedback off");
 		}
 		else {
-			setBangLED(0);
+			setBangLED(brightness);
+			Serial.println("feedback on");
 		}
-		blinkCount++;
+		feedbackCount++;
+		feedbackBlink = !feedbackBlink;
+		if (feedbackCount > feedbackLimit) {
+			feedbackBlink = false;
+			feedbackTimer = 0;
+			feedbackCount = 0;
+		}
 	}
 
 	if (pulseTimer && timer - pulseTimer > pulseInterval) {
 		pulseTimer = timer;
-		pulseState = !pulseState;
-		if (!pulseState) {
-			setBangLED(brightness);
-			setLights(brightness);
-		}
-		else {
+		
+		if (pulseBlink) {
 			setBangLED(0);
 			setLights(0);
+			pulseBlink = false;
+		}
+		else {
+			setBangLED(brightness);
+			setLights(brightness);
+			pulseBlink = true;
 		}
 	}
 	if (bangedTimer && timer - bangedTimer > bangedInterval) {
 		bangedTimer = timer;
-		bangedState = !bangedState;
-		if (!bangedState) {
+		if (bangedBlink) {
 			// toogle between default and banged controller color
 			setRGB(controller.colorBanged->getRGB());
 		}
 		else {
 			setRGB(controller.color->getRGB());
 		}
+		bangedBlink = !bangedBlink;
 	}
 	if (enhancedEncoderTimer && timer - enhancedEncoderTimer > enhancedEncoderDuration) {
 		enhancedEncoderTimer = 0;
+		pulseBlink = false;
+		pulseTimer = 0;
+		setBangLED(brightness);
+		setLights(brightness);
 		controller.game->deEnhance();
 	}
 
@@ -646,11 +678,11 @@ void loop() {
 	if (prepareChangeProfileTimer && timer - prepareChangeProfileTimer > prepareChangeProfileDuration) {
 		modeActivateChangeProfile();
 	}
-	if (activateChangeProfile && timer - activateChangeProfileTimer > activateChangeProfileInterval) {
+	if (activateChangeProfileTimer && timer - activateChangeProfileTimer > activateChangeProfileInterval) {
 		activateChangeProfileTimer = timer;
-		activateChangeProfile = !activateChangeProfile;
-		if (activateChangeProfile) {
-			setRGB(controller.colorFeedback->getRGB());
+		
+		if (activateChangeProfileBlink) {
+			setRGB(controller.colorBanged->getRGB());
 		}
 		else {
 			setRGB(controller.color->getRGB());
@@ -658,17 +690,20 @@ void loop() {
 		if (timer - activateChangeProfileTimer > activateChangeProfileDuration) {
 			modeDefault();
 		}
+		activateChangeProfileBlink = !activateChangeProfileBlink;
 	}
 
 	for (unsigned char i = 0; i < NUM_ENCODERS; i++) {
 		encoders[i].tick();
 		int newPosition = encoders[i].getPosition();
 		if (newPosition != encoderValue[i]) {
+			/*
 			Serial.print("Encoder: ");
 			Serial.print(i);
 			Serial.print(" | Position: ");
 			Serial.print(newPosition);
 			Serial.println(" |");
+			*/
 			encoderValue[i] = newPosition;
 			encoderChanged = true;
 			char direction = (char) encoders[i].getDirection();
@@ -680,12 +715,12 @@ void loop() {
 		if (digitalRead(rotaryPushPins[i]) == LOW) {
 			if (rotaryPushStates[i] == 0) {
 				rotaryPushStates[i] = 1;
-				sendRotaryPush(rotaryPushButtonIndex[i], true);
+				sendRotaryPush(i, true);
 			}
 		} else {
 			if (rotaryPushStates[i] == 1) {
 				rotaryPushStates[i] = 0;
-				sendRotaryPush(rotaryPushButtonIndex[i], false);
+				sendRotaryPush(i, false);
 			}
 		}
 	}
@@ -711,7 +746,7 @@ void loop() {
 		break;
 		default:
 			// delay half of a nano second
-			delayMicroseconds(500);
+			delayMicroseconds(100);
 			if (timer - sleepTimer > SLEEP_TIME) {
 				sleep();
 			}

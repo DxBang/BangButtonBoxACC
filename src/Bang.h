@@ -51,18 +51,19 @@ unsigned long timer = 0;
 unsigned long debugTimer = 0;
 unsigned long loopCount = 0;
 
-bool pulseState = false;
+
+bool pulseBlink = false;
 unsigned long pulseTimer = 0;
 unsigned short pulseInterval = 250;
 
 
-bool blinkState = false;
-unsigned long blinkTimer = 0;
-unsigned char blinkInterval = 100;
-unsigned char blinkCount = 0;
-unsigned char blinkLimit = 10;
+bool feedbackBlink = false;
+unsigned long feedbackTimer = 0;
+unsigned char feedbackInterval = 100;
+unsigned char feedbackCount = 0;
+unsigned char feedbackLimit = 10;
 
-bool bangedState = false;
+bool bangedBlink = false;
 unsigned long bangedTimer = 0;
 unsigned short bangedInterval = 500;
 unsigned long bangedDuration = 3000;
@@ -87,6 +88,7 @@ unsigned short prepareChangeProfileDuration = 2000;
 unsigned long activateChangeProfileTimer = 0;
 unsigned short activateChangeProfileInterval = 250;
 unsigned short activateChangeProfileDuration = 2000;
+bool activateChangeProfileBlink = false;
 
 unsigned char sleeping = 0;
 unsigned long sleepTimer = 0;
@@ -199,7 +201,7 @@ class Game {
 		int longerDelay = 200;
 		int longestDelay = 500;
 		int tapDelay = 50;
-		int recurrenceDelay = 100;
+		int recurrenceDelay = 50;
 		// Joystick_ *joystick;
 		Game() {};
 		virtual void button(unsigned char button, bool pressed) {};
@@ -232,7 +234,7 @@ class Game {
 			this->enhanced = true;
 			enhancedEncoderTimer = millis();
 			pulseTimer = millis();
-			blinkTimer = 0;
+			feedbackTimer = 0;
 		};
 		virtual void deEnhance() {
 			this->enhanced = false;
@@ -284,6 +286,15 @@ class Game {
 			}
 			*/
 			for (unsigned char i = 0; i < times; i++) {
+				Serial.print("TAP: ");
+				Serial.print(key);
+				Serial.print(" ");
+				Serial.print(i);
+				Serial.print(" ");
+				Serial.println(times);
+				
+
+
 				Keyboard.press(key);
 				delay(this->tapDelay);
 				Keyboard.release(key);

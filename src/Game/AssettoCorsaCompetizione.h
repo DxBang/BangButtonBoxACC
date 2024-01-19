@@ -71,70 +71,104 @@ class AssettoCorsaCompetizione : public Game {
 
 
 
-
-				case R_ENCODER_M_UP:
-					this->engineMapUp(pressed);
-					this->engineMapUp(!pressed);
-				break;
-				case R_ENCODER_M_DN:
-					this->engineMapDown(pressed);
-					this->engineMapDown(!pressed);
-				break;
-				case R_ENCODER_L_UP:
-					this->brakeBiasUp(pressed);
-					this->brakeBiasUp(!pressed);
-				break;
-				case R_ENCODER_L_DN:
-					this->brakeBiasDown(pressed);
-					this->brakeBiasDown(!pressed);
-				break;
-				case R_ENCODER_R_UP:
-					this->tractionControlUp(pressed);
-					this->tractionControlUp(!pressed);
-				break;
-				case R_ENCODER_R_DN:
-					this->tractionControlDown(pressed);
-					this->tractionControlDown(!pressed);
-				break;
 				
 				case B_ENCODER_M_PH:
-					if (pressed) {
-						this->enhance();
-					}
-				break;
 				case B_ENCODER_L_PH:
+				case B_ENCODER_R_PH:
+				case BANGED + B_ENCODER_M_PH:
+				case BANGED + B_ENCODER_L_PH:
+				case BANGED + B_ENCODER_R_PH:
 					if (pressed) {
 						this->enhance();
 					}
 				break;
-				case B_ENCODER_R_PH:
-					if (pressed) {
-						this->enhance();
+
+				case R_ENCODER_M_UP:
+					if (this->enhanced) {
+						this->engineMapUp(pressed, 3);
+					}
+					else {
+						this->engineMapUp(pressed, 1);
+					}
+				break;
+				case R_ENCODER_M_DN:
+					if (this->enhanced) {
+						this->engineMapDown(pressed, 3);
+					}
+					else {
+						this->engineMapDown(pressed, 1);
+					}
+				break;
+				case R_ENCODER_L_UP:
+					if (this->enhanced) {
+						this->brakeBiasUp(pressed, 10);
+					}
+					else {
+						this->brakeBiasUp(pressed, 5);
+					}
+					
+				break;
+				case R_ENCODER_L_DN:
+					if (this->enhanced) {
+						this->brakeBiasDown(pressed, 10);
+					}
+					else {
+						this->brakeBiasDown(pressed, 5);
+					}
+				break;
+				case R_ENCODER_R_UP:
+					if (this->enhanced) {
+						this->tractionControlUp(pressed, 3);
+					}
+					else {
+						this->tractionControlUp(pressed, 1);
+					}
+				break;
+				case R_ENCODER_R_DN:
+					if (this->enhanced) {
+						this->tractionControlDown(pressed, 3);
+					}
+					else {
+						this->tractionControlDown(pressed, 1);
 					}
 				break;
 				case BANGED + R_ENCODER_L_UP:
-					this->antilockBrakingSystemUp(pressed);
-					this->antilockBrakingSystemUp(!pressed);
+					if (this->enhanced) {
+						this->antilockBrakingSystemUp(pressed, 3);
+					}
+					else {
+						this->antilockBrakingSystemUp(pressed, 1);
+					}
 				break;
 				case BANGED + R_ENCODER_L_DN:
-					this->antilockBrakingSystemDown(pressed);
-					this->antilockBrakingSystemDown(!pressed);
+					if (this->enhanced) {
+						this->antilockBrakingSystemDown(pressed, 3);
+					}
+					else {
+						this->antilockBrakingSystemDown(pressed, 1);
+					}
 				break;
 				case BANGED + R_ENCODER_R_UP:
-					this->tractionControlCutUp(pressed);
-					this->tractionControlCutUp(!pressed);
+					if (this->enhanced) {
+						this->tractionControlCutUp(pressed, 3);
+					}
+					else {
+						this->tractionControlCutUp(pressed, 1);
+					}
 				break;
 				case BANGED + R_ENCODER_R_DN:
-					this->tractionControlCutDown(pressed);
-					this->tractionControlCutDown(!pressed);
+					if (this->enhanced) {
+						this->tractionControlCutDown(pressed, 3);
+					}
+					else {
+						this->tractionControlCutDown(pressed, 1);
+					}
 				break;
 				case BANGED + R_ENCODER_M_UP:
-					this->volumeUp(pressed);
-					this->volumeUp(!pressed);
+					this->volumeUp(pressed, 5);
 				break;
 				case BANGED + R_ENCODER_M_DN:
-					this->volumeDown(pressed);
-					this->volumeDown(!pressed);
+					this->volumeDown(pressed, 5);
 				break;
 
 
