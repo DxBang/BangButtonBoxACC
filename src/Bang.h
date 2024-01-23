@@ -50,45 +50,43 @@
 unsigned long timer = 0;
 unsigned long debugTimer = 0;
 unsigned long loopCount = 0;
+unsigned char feedbackCount = 0;
+
+const unsigned char feedbackLimit = 10;
 
 
-bool pulseBlink = false;
-unsigned long pulseTimer = 0;
-unsigned short pulseInterval = 250;
+const unsigned short controllerReadyDelay = 1000;
 
 
 bool feedbackBlink = false;
-unsigned long feedbackTimer = 0;
-unsigned char feedbackInterval = 100;
-unsigned char feedbackCount = 0;
-unsigned char feedbackLimit = 10;
-
+bool pulseBlink = false;
 bool bangedBlink = false;
+bool activateSystemBlink = false;
+unsigned long feedbackTimer = 0;
+unsigned long pulseTimer = 0;
 unsigned long bangedTimer = 0;
-unsigned short bangedInterval = 500;
-unsigned long bangedDuration = 3000;
-
+unsigned long bangedModeTimer = 0;
 unsigned long enhancedEncoderTimer = 0;
-unsigned short enhancedEncoderDuration = 5000;
+unsigned long prepareSystemTimer = 0;
+unsigned long activateSystemTimer = 0;
+unsigned long activateSystemModeTimer = 0;
+unsigned long controllerReadyTimer = 0;
+
+const unsigned char feedbackInterval = 50;
+const unsigned short pulseInterval = 500;
+const unsigned short bangedInterval = 500;
+const unsigned short activateSystemInterval = 1000;
+
+const unsigned short bangModeDuration = 3000;
+const unsigned short enhancedEncoderDuration = 5000;
+const unsigned short prepareSystemDuration = 2000;
+const unsigned short activateSystemModeDuration = 20000;
+
 
 unsigned char brightness = 100; // for LED_LIGHTS_PIN, LED_BANG_PIN
 unsigned char brightnessMinValue = 0; // for LED_LIGHTS_PIN, LED_BANG_PIN, LED_R_PIN, LED_G_PIN, LED_B_PIN
 unsigned char brightnessMaxValue = 127;	// for LED_LIGHTS_PIN, LED_BANG_PIN. LED_R_PIN, LED_G_PIN, LED_B_PIN
 unsigned char brightnessStep = 1; // for LED_LIGHTS_PIN, LED_BANG_PIN, LED_R_PIN, LED_G_PIN, LED_B_PIN
-
-bool controllerReady = false;
-unsigned short controllerChangeDelay = 1000;
-unsigned long controllerChangeTimer = 0;
-
-bool bangToggleMode = true; // false = timed, true = toggle
-
-bool activateChangeProfile = false;
-unsigned long prepareChangeProfileTimer = 0;
-unsigned short prepareChangeProfileDuration = 2000;
-unsigned long activateChangeProfileTimer = 0;
-unsigned short activateChangeProfileInterval = 250;
-unsigned short activateChangeProfileDuration = 2000;
-bool activateChangeProfileBlink = false;
 
 unsigned char sleeping = 0;
 unsigned long sleepTimer = 0;
@@ -113,6 +111,39 @@ class Color {
 		float lightness;
 
 	public:
+		Color(HSL hsl) : hue(hsl.h), saturation(hsl.s), lightness(hsl.l) {}
+		/*
+		Color(RGB rgb) {
+			float r = rgb.r / 255.0;
+			float g = rgb.g / 255.0;
+			float b = rgb.b / 255.0;
+			float c_max = max(r, max(g, b));
+			float c_min = min(r, min(g, b));
+			float delta = c_max - c_min;
+			float h, s, l;
+			if (delta == 0) {
+				h = 0;
+			} else if (c_max == r) {
+				h = 60 * fmod(((g - b) / delta), 6);
+			} else if (c_max == g) {
+				h = 60 * (((b - r) / delta) + 2);
+			} else if (c_max == b) {
+				h = 60 * (((r - g) / delta) + 4);
+			}
+			if (h < 0) {
+				h += 360;
+			}
+			l = (c_max + c_min) / 2;
+			if (delta == 0) {
+				s = 0;
+			} else {
+				s = delta / (1 - abs(2 * l - 1));
+			}
+			this->hue = h;
+			this->saturation = s;
+			this->lightness = l;
+		}
+		*/
 		Color(unsigned short hue, float saturation, float lightness) : hue(hue), saturation(saturation), lightness(lightness) {}
 
 		void setHSL(unsigned short hue, float saturation, float lightness) {
