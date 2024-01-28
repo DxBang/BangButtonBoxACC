@@ -78,16 +78,16 @@ class BangDebug : public Game {
 					Serial.print("B_MFD_ELECTRONICS: ");
 					Serial.println(pressed);
 					break;
-				case B_EXTRA_1:
-					Serial.print("B_EXTRA_1: ");
+				case B_I:
+					Serial.print("B_I: ");
 					Serial.println(pressed);
 					break;
-				case B_EXTRA_2:
-					Serial.print("B_EXTRA_2: ");
+				case B_LOVE:
+					Serial.print("B_LOVE: ");
 					Serial.println(pressed);
 					break;
-				case B_EXTRA_3:
-					Serial.print("B_EXTRA_3: ");
+				case B_RACING:
+					Serial.print("B_RACING: ");
 					Serial.println(pressed);
 					break;
 				case B_ENCODER_L_PH:
@@ -193,16 +193,16 @@ class BangDebug : public Game {
 					Serial.print("BANGED B_MFD_ELECTRONICS: ");
 					Serial.println(pressed);
 					break;
-				case BANGED + B_EXTRA_1:
-					Serial.print("BANGED B_EXTRA_1: ");
+				case BANGED + B_I:
+					Serial.print("BANGED B_I: ");
 					Serial.println(pressed);
 					break;
-				case BANGED + B_EXTRA_2:
-					Serial.print("BANGED B_EXTRA_2: ");
+				case BANGED + B_LOVE:
+					Serial.print("BANGED B_LOVE: ");
 					Serial.println(pressed);
 					break;
-				case BANGED + B_EXTRA_3:
-					Serial.print("BANGED B_EXTRA_3: ");
+				case BANGED + B_RACING:
+					Serial.print("BANGED B_RACING: ");
 					Serial.println(pressed);
 					break;
 				case BANGED + B_ENCODER_L_PH:

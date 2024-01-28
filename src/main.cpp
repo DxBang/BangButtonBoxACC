@@ -129,11 +129,16 @@ Assetto Corsa Competizione Profile
 		encoderLeft Push: Encoder Multiplier
 		encoderRight Push: Encoder Multiplier
 		encoderMiddle Push: Encoder Multiplier
+
+Spade crimps
+	- 2.0mm x 0.5
+	- 2.8mm x 0.5
 */
 
 
-#include <Smurf.h>
+// #include <Smurf.h>
 // #include <Dev.h>
+#include <Pins.h>
 
 unsigned char controllerIndex = 0;
 
@@ -167,10 +172,10 @@ void hyperSleep();
 
 Keypad buttons = Keypad(
 	makeKeymap(buttonsGrid),
-	rowPins,
-	colPins,
-	NUM_ROWS,
-	NUM_COLS
+	matrixSenders,
+	matrixReceivers,
+	MATRIX_SENDERS,
+	MATRIX_RECEIVERS
 );
 
 #define NUM_ENCODERS 3

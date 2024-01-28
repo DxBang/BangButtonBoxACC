@@ -28,9 +28,9 @@
 #define B_MFD_PITSTOP 15
 #define B_MFD_POSITIONS 16
 #define B_MFD_STANDINGS 17
-#define B_EXTRA_1 18
-#define B_EXTRA_2 19
-#define B_EXTRA_3 20
+#define B_I 18
+#define B_LOVE 19
+#define B_RACING 20
 
 #define B_ENCODER_M_PH 21
 #define R_ENCODER_M_UP 22
@@ -46,15 +46,12 @@
 
 #define BANGED 29
 
-
 unsigned long timer = 0;
 unsigned long debugTimer = 0;
 unsigned long loopCount = 0;
 unsigned char feedbackCount = 0;
 
 const unsigned char feedbackLimit = 10;
-
-
 const unsigned short controllerReadyDelay = 1000;
 
 
@@ -81,7 +78,6 @@ const unsigned short bangModeDuration = 3000;
 const unsigned short enhancedEncoderDuration = 5000;
 const unsigned short prepareSystemDuration = 2000;
 const unsigned short activateSystemModeDuration = 20000;
-
 
 unsigned char brightness = 100; // for LED_LIGHTS_PIN, LED_BANG_PIN
 unsigned char brightnessMinValue = 0; // for LED_LIGHTS_PIN, LED_BANG_PIN, LED_R_PIN, LED_G_PIN, LED_B_PIN
