@@ -9,6 +9,10 @@
 	#include <HID-Project.h>
 #endif
 
+#ifndef DEBUG
+	#define DEBUG 0
+#endif
+
 // Inputs
 #define B_NULL 0
 #define B_BANG 1
@@ -46,46 +50,8 @@
 
 #define BANGED 29
 
-unsigned long timer = 0;
-unsigned long debugTimer = 0;
-unsigned long loopCount = 0;
-unsigned char feedbackCount = 0;
-
-const unsigned char feedbackLimit = 10;
-const unsigned short controllerReadyDelay = 1000;
 
 
-bool feedbackBlink = false;
-bool pulseBlink = false;
-bool bangedBlink = false;
-bool activateSystemBlink = false;
-unsigned long feedbackTimer = 0;
-unsigned long pulseTimer = 0;
-unsigned long bangedTimer = 0;
-unsigned long bangedModeTimer = 0;
-unsigned long enhancedEncoderTimer = 0;
-unsigned long prepareSystemTimer = 0;
-unsigned long activateSystemTimer = 0;
-unsigned long activateSystemModeTimer = 0;
-unsigned long controllerReadyTimer = 0;
-
-const unsigned char feedbackInterval = 50;
-const unsigned short pulseInterval = 500;
-const unsigned short bangedInterval = 500;
-const unsigned short activateSystemInterval = 1000;
-
-const unsigned short bangModeDuration = 3000;
-const unsigned short enhancedEncoderDuration = 5000;
-const unsigned short prepareSystemDuration = 2000;
-const unsigned short activateSystemModeDuration = 20000;
-
-unsigned char brightness = 100; // for LED_LIGHTS_PIN, LED_BANG_PIN
-unsigned char brightnessMinValue = 0; // for LED_LIGHTS_PIN, LED_BANG_PIN, LED_R_PIN, LED_G_PIN, LED_B_PIN
-unsigned char brightnessMaxValue = 127;	// for LED_LIGHTS_PIN, LED_BANG_PIN. LED_R_PIN, LED_G_PIN, LED_B_PIN
-unsigned char brightnessStep = 1; // for LED_LIGHTS_PIN, LED_BANG_PIN, LED_R_PIN, LED_G_PIN, LED_B_PIN
-
-unsigned char sleeping = 0;
-unsigned long sleepTimer = 0;
 
 
 struct RGB {
@@ -260,13 +226,13 @@ class Game {
 		virtual void enhance() {
 			this->enhanced = true;
 			enhancedEncoderTimer = millis();
-			pulseTimer = millis();
 			feedbackTimer = 0;
+			Serial.println("ENHANCE");
 		};
 		virtual void deEnhance() {
 			this->enhanced = false;
 			enhancedEncoderTimer = 0;
-			pulseTimer = 0;
+			Serial.println("DE-ENHANCE");
 		};
 		/* keybaord */
 		void key(KeyboardKeycode keyChar, bool pressed) {
@@ -313,15 +279,6 @@ class Game {
 			}
 			*/
 			for (unsigned char i = 0; i < times; i++) {
-				Serial.print("TAP: ");
-				Serial.print(key);
-				Serial.print(" ");
-				Serial.print(i);
-				Serial.print(" ");
-				Serial.println(times);
-				
-
-
 				Keyboard.press(key);
 				delay(this->tapDelay);
 				Keyboard.release(key);

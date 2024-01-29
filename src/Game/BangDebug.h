@@ -93,14 +93,23 @@ class BangDebug : public Game {
 				case B_ENCODER_L_PH:
 					Serial.print("B_ENCODER_L_PH: ");
 					Serial.println(pressed);
+					if (pressed) {
+						this->enhance();
+					}
 					break;
 				case B_ENCODER_M_PH:
 					Serial.print("B_ENCODER_M_PH: ");
 					Serial.println(pressed);
+					if (pressed) {
+						this->enhance();
+					}
 					break;
 				case B_ENCODER_R_PH:
 					Serial.print("B_ENCODER_R_PH: ");
 					Serial.println(pressed);
+					if (pressed) {
+						this->enhance();
+					}
 					break;
 				case R_ENCODER_M_UP:
 					Serial.print("R_ENCODER_M_UP: ");
@@ -208,14 +217,23 @@ class BangDebug : public Game {
 				case BANGED + B_ENCODER_L_PH:
 					Serial.print("BANGED B_ENCODER_L_PH: ");
 					Serial.println(pressed);
+					if (pressed) {
+						this->enhance();
+					}
 					break;
 				case BANGED + B_ENCODER_M_PH:
 					Serial.print("BANGED B_ENCODER_M_PH: ");
 					Serial.println(pressed);
+					if (pressed) {
+						this->enhance();
+					}
 					break;
 				case BANGED + B_ENCODER_R_PH:
 					Serial.print("BANGED B_ENCODER_R_PH: ");
 					Serial.println(pressed);
+					if (pressed) {
+						this->enhance();
+					}
 					break;
 				case BANGED + R_ENCODER_M_UP:
 					Serial.print("BANGED R_ENCODER_M_UP: ");
