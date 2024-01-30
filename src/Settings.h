@@ -11,9 +11,6 @@ unsigned char feedbackCount = 0;
 
 
 bool bangTimedMode = false; // true = timed, false = toggle
-const unsigned short controllerReadyDelay = 1000;
-
-// const unsigned char feedbackLimit = 10;
 
 bool feedbackBlink = false;
 bool pulseBlink = false;
@@ -40,22 +37,21 @@ unsigned long bangedModeTimer = 0;
 
 unsigned long enhancedEncoderTimer = 0;
 const unsigned short enhancedEncoderDuration = 5000;
+const unsigned char enhancedEncoderMultiplier = 5;
 
 unsigned long prepareSystemTimer = 0;
 const unsigned short prepareSystemDuration = 2000;
 
 unsigned long activateSystemTimer = 0;
 const unsigned short activateSystemInterval = 1000;
-const unsigned short activateSystemDuration = 10000;
-
-unsigned long activateSystemModeTimer = 0;
-
+const unsigned short activateSystemDuration = 20000;
 
 unsigned long controllerReadyTimer = 0;
+const unsigned short controllerReadyDelay = 1000;
 
-unsigned char brightness = 100; // for LED_LIGHTS_PIN, LED_BANG_PIN
+unsigned char brightness = 60; // for LED_LIGHTS_PIN, LED_BANG_PIN
 unsigned char brightnessMinValue = 0; // for LED_LIGHTS_PIN, LED_BANG_PIN, LED_R_PIN, LED_G_PIN, LED_B_PIN
-unsigned char brightnessMaxValue = 127;	// for LED_LIGHTS_PIN, LED_BANG_PIN. LED_R_PIN, LED_G_PIN, LED_B_PIN
+unsigned char brightnessMaxValue = 120;	// for LED_LIGHTS_PIN, LED_BANG_PIN. LED_R_PIN, LED_G_PIN, LED_B_PIN
 unsigned char brightnessStep = 1; // for LED_LIGHTS_PIN, LED_BANG_PIN, LED_R_PIN, LED_G_PIN, LED_B_PIN
 
 unsigned char sleeping = 0;

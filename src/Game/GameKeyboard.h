@@ -15,9 +15,7 @@ class GameKeyboard : public Game {
 	public:
 		GameKeyboard() {
 			isKeyboard = true;
-			if (DEBUG) {
-				Serial.println("GameKeyboard");
-			}
+			debugln("GameKeyboard");
 		};
 		void button(unsigned char button, bool pressed) override {
 			switch (button) {
@@ -123,12 +121,11 @@ class GameKeyboard : public Game {
 					this->key(KEY_RIGHT_ARROW, pressed);
 				break;
 				default:
-					if (DEBUG) {
-						Serial.print("GameKeyboard::button() ");
-						Serial.print(button);
-						Serial.print(" = ");
-						Serial.println(pressed);
-					}
+					debug("B: ");
+					debug(button);
+					debug(" = ");
+					debugln(pressed);
+				break;
 			}
 		}
 };

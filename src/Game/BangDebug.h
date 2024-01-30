@@ -11,262 +11,262 @@ class BangDebug : public Game {
 		void button(unsigned char button, bool pressed) override {
 			switch (button) {
 				case B_NULL:
-					Serial.print("B_NULL: ");
-					Serial.println(pressed);
+					debug("B_NULL: ");
+					debugln(pressed);
 					break;
 				case B_ENGINE:
-					Serial.print("B_ENGINE: ");
-					Serial.println(pressed);
+					debug("B_ENGINE: ");
+					debugln(pressed);
 					break;
 				case B_IGNITION:
-					Serial.print("B_IGNITION: ");
-					Serial.println(pressed);
+					debug("B_IGNITION: ");
+					debugln(pressed);
 					break;
 				case B_PIT_LIMITER:
-					Serial.print("B_PIT_LIMITER: ");
-					Serial.println(pressed);
+					debug("B_PIT_LIMITER: ");
+					debugln(pressed);
 					break;
 				case B_LIGHT:
-					Serial.print("B_LIGHT: ");
-					Serial.println(pressed);
+					debug("B_LIGHT: ");
+					debugln(pressed);
 					break;
 				case B_FLASH:
-					Serial.print("B_FLASH: ");
-					Serial.println(pressed);
+					debug("B_FLASH: ");
+					debugln(pressed);
 					break;
 				case B_RAINLIGHT:
-					Serial.print("B_RAINLIGHT: ");
-					Serial.println(pressed);
+					debug("B_RAINLIGHT: ");
+					debugln(pressed);
 					break;
 				case B_WIPER:
-					Serial.print("B_WIPER: ");
-					Serial.println(pressed);
+					debug("B_WIPER: ");
+					debugln(pressed);
 					break;
 				case B_MFD_PITSTOP:
-					Serial.print("B_MFD_PITSTOP: ");
-					Serial.println(pressed);
+					debug("B_MFD_PITSTOP: ");
+					debugln(pressed);
 					break;
 				case B_MFD_STANDINGS:
-					Serial.print("B_MFD_STANDINGS: ");
-					Serial.println(pressed);
+					debug("B_MFD_STANDINGS: ");
+					debugln(pressed);
 					break;
 				case B_MFD_POSITIONS:
-					Serial.print("B_MFD_POSITIONS: ");
-					Serial.println(pressed);
+					debug("B_MFD_POSITIONS: ");
+					debugln(pressed);
 					break;
 				case B_NAV_UP:
-					Serial.print("B_NAV_UP: ");
-					Serial.println(pressed);
+					debug("B_NAV_UP: ");
+					debugln(pressed);
 					break;
 				case B_NAV_DOWN:
-					Serial.print("B_NAV_DOWN: ");
-					Serial.println(pressed);
+					debug("B_NAV_DOWN: ");
+					debugln(pressed);
 					break;
 				case B_NAV_LEFT:
-					Serial.print("B_NAV_LEFT: ");
-					Serial.println(pressed);
+					debug("B_NAV_LEFT: ");
+					debugln(pressed);
 					break;
 				case B_NAV_RIGHT:
-					Serial.print("B_NAV_RIGHT: ");
-					Serial.println(pressed);
+					debug("B_NAV_RIGHT: ");
+					debugln(pressed);
 					break;
 				case B_NAV_SELECT:
-					Serial.print("B_NAV_SELECT: ");
-					Serial.println(pressed);
+					debug("B_NAV_SELECT: ");
+					debugln(pressed);
 					break;
 				case B_MFD_ELECTRONICS:
-					Serial.print("B_MFD_ELECTRONICS: ");
-					Serial.println(pressed);
+					debug("B_MFD_ELECTRONICS: ");
+					debugln(pressed);
 					break;
 				case B_I:
-					Serial.print("B_I: ");
-					Serial.println(pressed);
+					debug("B_I: ");
+					debugln(pressed);
 					break;
 				case B_LOVE:
-					Serial.print("B_LOVE: ");
-					Serial.println(pressed);
+					debug("B_LOVE: ");
+					debugln(pressed);
 					break;
 				case B_RACING:
-					Serial.print("B_RACING: ");
-					Serial.println(pressed);
+					debug("B_RACING: ");
+					debugln(pressed);
 					break;
 				case B_ENCODER_L_PH:
-					Serial.print("B_ENCODER_L_PH: ");
-					Serial.println(pressed);
+					debug("B_ENCODER_L_PH: ");
+					debugln(pressed);
 					if (pressed) {
 						this->enhance();
 					}
 					break;
 				case B_ENCODER_M_PH:
-					Serial.print("B_ENCODER_M_PH: ");
-					Serial.println(pressed);
+					debug("B_ENCODER_M_PH: ");
+					debugln(pressed);
 					if (pressed) {
 						this->enhance();
 					}
 					break;
 				case B_ENCODER_R_PH:
-					Serial.print("B_ENCODER_R_PH: ");
-					Serial.println(pressed);
+					debug("B_ENCODER_R_PH: ");
+					debugln(pressed);
 					if (pressed) {
 						this->enhance();
 					}
 					break;
 				case R_ENCODER_M_UP:
-					Serial.print("R_ENCODER_M_UP: ");
-					Serial.println(pressed);
+					debug("R_ENCODER_M_UP: ");
+					debugln(pressed);
 					break;
 				case R_ENCODER_M_DN:
-					Serial.print("R_ENCODER_M_DN: ");
-					Serial.println(pressed);
+					debug("R_ENCODER_M_DN: ");
+					debugln(pressed);
 					break;
 				case R_ENCODER_L_UP:
-					Serial.print("R_ENCODER_L_UP: ");
-					Serial.println(pressed);
+					debug("R_ENCODER_L_UP: ");
+					debugln(pressed);
 					break;
 				case R_ENCODER_L_DN:
-					Serial.print("R_ENCODER_L_DN: ");
-					Serial.println(pressed);
+					debug("R_ENCODER_L_DN: ");
+					debugln(pressed);
 					break;
 				case R_ENCODER_R_UP:
-					Serial.print("R_ENCODER_R_UP: ");
-					Serial.println(pressed);
+					debug("R_ENCODER_R_UP: ");
+					debugln(pressed);
 					break;
 				case R_ENCODER_R_DN:
-					Serial.print("R_ENCODER_R_DN: ");
-					Serial.println(pressed);
+					debug("R_ENCODER_R_DN: ");
+					debugln(pressed);
 					break;
 
 
 				// BANGED Functionality
 				case BANGED + B_ENGINE:
-					Serial.print("BANGED B_ENGINE: ");
-					Serial.println(pressed);
+					debug("BANGED B_ENGINE: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_IGNITION:
-					Serial.print("BANGED B_IGNITION: ");
-					Serial.println(pressed);
+					debug("BANGED B_IGNITION: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_PIT_LIMITER:
-					Serial.print("BANGED B_PIT_LIMITER: ");
-					Serial.println(pressed);
+					debug("BANGED B_PIT_LIMITER: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_LIGHT:
-					Serial.print("BANGED B_LIGHT: ");
-					Serial.println(pressed);
+					debug("BANGED B_LIGHT: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_FLASH:
-					Serial.print("BANGED B_FLASH: ");
-					Serial.println(pressed);
+					debug("BANGED B_FLASH: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_RAINLIGHT:
-					Serial.print("BANGED B_RAINLIGHT: ");
-					Serial.println(pressed);
+					debug("BANGED B_RAINLIGHT: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_WIPER:
-					Serial.print("BANGED B_WIPER: ");
-					Serial.println(pressed);
+					debug("BANGED B_WIPER: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_MFD_PITSTOP:
-					Serial.print("BANGED B_MFD_PITSTOP: ");
-					Serial.println(pressed);
+					debug("BANGED B_MFD_PITSTOP: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_MFD_STANDINGS:
-					Serial.print("BANGED B_MFD_STANDINGS: ");
-					Serial.println(pressed);
+					debug("BANGED B_MFD_STANDINGS: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_MFD_POSITIONS:
-					Serial.print("BANGED B_MFD_POSITIONS: ");
-					Serial.println(pressed);
+					debug("BANGED B_MFD_POSITIONS: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_NAV_UP:
-					Serial.print("BANGED B_NAV_UP: ");
-					Serial.println(pressed);
+					debug("BANGED B_NAV_UP: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_NAV_DOWN:
-					Serial.print("BANGED B_NAV_DOWN: ");
-					Serial.println(pressed);
+					debug("BANGED B_NAV_DOWN: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_NAV_LEFT:
-					Serial.print("BANGED B_NAV_LEFT: ");
-					Serial.println(pressed);
+					debug("BANGED B_NAV_LEFT: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_NAV_RIGHT:
-					Serial.print("BANGED B_NAV_RIGHT: ");
-					Serial.println(pressed);
+					debug("BANGED B_NAV_RIGHT: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_NAV_SELECT:
-					Serial.print("BANGED B_NAV_SELECT: ");
-					Serial.println(pressed);
+					debug("BANGED B_NAV_SELECT: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_MFD_ELECTRONICS:
-					Serial.print("BANGED B_MFD_ELECTRONICS: ");
-					Serial.println(pressed);
+					debug("BANGED B_MFD_ELECTRONICS: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_I:
-					Serial.print("BANGED B_I: ");
-					Serial.println(pressed);
+					debug("BANGED B_I: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_LOVE:
-					Serial.print("BANGED B_LOVE: ");
-					Serial.println(pressed);
+					debug("BANGED B_LOVE: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_RACING:
-					Serial.print("BANGED B_RACING: ");
-					Serial.println(pressed);
+					debug("BANGED B_RACING: ");
+					debugln(pressed);
 					break;
 				case BANGED + B_ENCODER_L_PH:
-					Serial.print("BANGED B_ENCODER_L_PH: ");
-					Serial.println(pressed);
+					debug("BANGED B_ENCODER_L_PH: ");
+					debugln(pressed);
 					if (pressed) {
 						this->enhance();
 					}
 					break;
 				case BANGED + B_ENCODER_M_PH:
-					Serial.print("BANGED B_ENCODER_M_PH: ");
-					Serial.println(pressed);
+					debug("BANGED B_ENCODER_M_PH: ");
+					debugln(pressed);
 					if (pressed) {
 						this->enhance();
 					}
 					break;
 				case BANGED + B_ENCODER_R_PH:
-					Serial.print("BANGED B_ENCODER_R_PH: ");
-					Serial.println(pressed);
+					debug("BANGED B_ENCODER_R_PH: ");
+					debugln(pressed);
 					if (pressed) {
 						this->enhance();
 					}
 					break;
 				case BANGED + R_ENCODER_M_UP:
-					Serial.print("BANGED R_ENCODER_M_UP: ");
-					Serial.println(pressed);
+					debug("BANGED R_ENCODER_M_UP: ");
+					debugln(pressed);
 					break;
 				case BANGED + R_ENCODER_M_DN:
-					Serial.print("BANGED R_ENCODER_M_DN: ");
-					Serial.println(pressed);
+					debug("BANGED R_ENCODER_M_DN: ");
+					debugln(pressed);
 					break;
 				case BANGED + R_ENCODER_L_UP:
-					Serial.print("BANGED R_ENCODER_L_UP: ");
-					Serial.println(pressed);
+					debug("BANGED R_ENCODER_L_UP: ");
+					debugln(pressed);
 					break;
 				case BANGED + R_ENCODER_L_DN:
-					Serial.print("BANGED R_ENCODER_L_DN: ");
-					Serial.println(pressed);
+					debug("BANGED R_ENCODER_L_DN: ");
+					debugln(pressed);
 					break;
 				case BANGED + R_ENCODER_R_UP:
-					Serial.print("BANGED R_ENCODER_R_UP: ");
-					Serial.println(pressed);
+					debug("BANGED R_ENCODER_R_UP: ");
+					debugln(pressed);
 					break;
 				case BANGED + R_ENCODER_R_DN:
-					Serial.print("BANGED R_ENCODER_R_DN: ");
-					Serial.println(pressed);
+					debug("BANGED R_ENCODER_R_DN: ");
+					debugln(pressed);
 					break;
 
 				case B_BANG:
-					Serial.print("B_BANG: ");
-					Serial.println(pressed);
+					debug("B_BANG: ");
+					debugln(pressed);
 					break;
 				default:
-					Serial.print("Unknown button: ");
-					Serial.println(button);
+					debug("Unknown button: ");
+					debugln(button);
 					break;
 			}
 		}

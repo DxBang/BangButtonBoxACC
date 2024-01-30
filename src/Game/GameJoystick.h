@@ -40,7 +40,7 @@ class GameJoystick : public Game {
 		}
 		void button(unsigned char button, bool pressed) override {
 			if (!this->joystick) {
-				Serial.println("Joystick not available");
+				debugln("Joystick not available");
 				return;
 			}
 			bool autoRelease = false;
@@ -85,11 +85,10 @@ class GameJoystick : public Game {
 			}
 			else {
 				button = button - 2;
-				Serial.print("Button: ");
-				Serial.print(button);
-				Serial.print(" ");
-				Serial.println(pressed);
-				
+				debug("B: ");
+				debug(button);
+				debug(" ");
+				debugln(pressed);
 				this->joystick->setButton(button, pressed);
 				if (autoRelease) {
 					this->joystick->setButton(button, false);

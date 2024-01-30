@@ -11,9 +11,6 @@
 #include <Game/GameJoystick.h>
 #include <Game/GameKeyboard.h>
 
-#ifndef DEBUG
-	#define DEBUG 1
-#endif
 
 // 10 mins / 900000 ( 5000 debug )
 #define SLEEP_TIME 900000
@@ -271,37 +268,43 @@ Controller controller = controllers[controllerIndex];
 
 // functions
 void setController(unsigned char index) {
-	if (DEBUG) {
-		Serial.print("Setting Controller: ");
-		Serial.println(index);
-	}
-	// feedback(false);
-	Serial.println("Controller End");
+	debug("Setting Controller: ");
+	debugln(index);
 	controller.end();
-	Serial.println("Set Controller Index");
 	controllerIndex = index % controllerCount;
-	Serial.println("Set Controller");
 	controller = controllers[controllerIndex];
-	Serial.println("Controller Begin");
 	controller.begin();
-	if (DEBUG) {
-		Serial.print("Controller: ");
-		Serial.println(controller.name);
-	}
-	Serial.println("Controller Mode Default");
 	modeDefault();
-	// feedbackCount = 1;
-	Serial.println("Controller Ready Timer");
 	controllerReadyTimer = timer;
 }
 
+int minMax(double value, int min, int max) {
+	if (value < min) {
+		value = min;
+	}
+	else if (value > max) {
+		value = max;
+	}
+	return round(value);
+};
+void setBrightness(unsigned char value) {
+	brightness = minMax(value, brightnessMinValue, brightnessMaxValue);
+	setLights(brightness);
+	setBangLED(brightness);
+	float l = (float) brightness / 255;
+	debug("B: ");
+	debug(brightness);
+	debug(" | ");
+	debugln(l);
+	controller.color->setLightness(l);
+	controller.colorBanged->setLightness(l);
+	controller.colorFeedback->setLightness(l);
+}
 
 void sendButton(Key button) {
 	stayAwake();
 	if (!controllerReadyTimer) {
-		if (DEBUG) {
-			Serial.println("Controller Not Ready");
-		}
+		debugln("!Ready");
 		return;
 	}
 	bool pressed = false;
@@ -315,12 +318,12 @@ void sendButton(Key button) {
 			return;
 	}
 	/*
-	Serial.print("Button: ");
-	Serial.print(button.kchar);
-	Serial.print(" | ");
-	Serial.print(button.kcode);
-	Serial.print(" | ");
-	Serial.println(button.kstate);
+	debug("Button: ");
+	debug(button.kchar);
+	debug(" | ");
+	debug(button.kcode);
+	debug(" | ");
+	debugln(button.kstate);
 	*/
 	
 	
@@ -344,21 +347,15 @@ void sendButton(Key button) {
 		if (activateSystemTimer) {
 			switch (button.kchar) {
 				case B_ENGINE:
-					if (DEBUG) {
-						Serial.println("ACTIVATE CHANGE PROFILE");
-					}
+					debugln("CHANGE PROFILE");
 					setController(controllerIndex + 1);
 				break;
 				case B_IGNITION:
-					if (DEBUG) {
-						Serial.println("ACTIVATE TOGGLE BANG MODE");
-					}
 					bangTimedMode = !bangTimedMode;
-					if (DEBUG) {
-						Serial.print("Bang Toggle Mode: ");
-						Serial.println(bangTimedMode);
-					}
+					debug("Bang Toggle Mode: ");
+					debugln(bangTimedMode);
 					modeDefault();
+				break;
 			}
 			return;
 		}
@@ -388,17 +385,15 @@ void sendButton(Key button) {
 void sendRotaryPush(unsigned char index, bool pressed) {
 	stayAwake();
 	if (!controllerReadyTimer) {
-		if (DEBUG) {
-			Serial.println("Controller Not Ready");
-		}
+		debugln("!Ready");
 		return;
 	}
 	unsigned char button = rotaryPushButtonIndex[index];
 	/*
-	Serial.print("Rotary Push: ");
-	Serial.print(button);
-	Serial.print(" | ");
-	Serial.println(pressed);
+	debug("Rotary Push: ");
+	debug(button);
+	debug(" | ");
+	debugln(pressed);
 	*/
 	if (pressed) {
 		feedbackCount++;
@@ -417,46 +412,26 @@ void sendRotaryPush(unsigned char index, bool pressed) {
 void sendRotaryEncoder(unsigned char index, char direction) {
 	stayAwake();
 	if (!controllerReadyTimer) {
-		if (DEBUG) {
-			Serial.println("Controller Not Ready");
-		}
+		debugln("!Ready");
 		return;
 	}
 	/*
-	Serial.print("Rotary Encoder: ");
-	Serial.print(index);
-	Serial.print(" | ");
-	Serial.println(direction);
+	debug("Rotary Encoder: ");
+	debug(index);
+	debug(" | ");
+	debugln(direction);
 	*/
 	
 	if (activateSystemTimer) {
 		switch (index) {
 			case 0:
 				if (direction == 1) {
-					brightness += brightnessStep;
-					if (brightness > brightnessMaxValue) {
-						brightness = brightnessMaxValue;
-					}
+					setBrightness(brightness + brightnessStep);
 				}
 				else {
-					brightness -= brightnessStep;
-					if (brightness < brightnessMinValue) {
-						brightness = brightnessMinValue;
-					}
+					setBrightness(brightness - brightnessStep);
 				}
-				setLights(brightness);
-				setBangLED(brightness);
-				// adjust controller light intensity from brightness of 0-127 to 0.0-0.5
-				HSL c = controller.color->getHSL();
-				c.l = (float) brightness / (float) brightnessMaxValue * 0.5;
-				controller.color->setHSL(c.h, c.s, c.l);
-				c = controller.colorFeedback->getHSL();
-				c.l = (float) brightness / (float) brightnessMaxValue * 1.0;
-				controller.colorFeedback->setHSL(c.h, c.s, c.l);
-				c = controller.colorBanged->getHSL();
-				c.l = (float) brightness / (float) brightnessMaxValue * 0.5;
-				controller.colorBanged->setHSL(c.h, c.s, c.l);
-				setHSL(c);			
+				activateSystemTimer = timer;
 			break;
 		}
 		return;
@@ -498,11 +473,6 @@ void setHSL(HSL hsl) {
 	setRGB(color.getRGB());
 }
 void setLights(unsigned char value) {
-	if (DEBUG) {
-		Serial.print("setLights(");
-		Serial.print(value);
-		Serial.println(");");
-	}
 	analogWrite(LED_LIGHTS_PIN, 
 		min(
 			max(
@@ -526,18 +496,12 @@ void setBangLED(unsigned char value) {
 }
 
 void feedback() {
-	if (DEBUG) {
-		Serial.println("feedback()");
-	}
 	if (!feedbackTimer) {
 		feedbackTimer = timer;
 	}
 }
 
 void modeDefault() {
-	if (DEBUG) {
-		Serial.println("modeDefault()");
-	}
 	feedbackTimer = 0;
 	enhancedEncoderTimer = 0;
 	bangedTimer = 0;
@@ -558,9 +522,6 @@ void modeDefault() {
 	controller.debang();
 }
 void modeBanged() {
-	if (DEBUG) {
-		Serial.println("modeBanged()");
-	}
 	setRGB(controller.colorBanged->getRGB());
 	if (!bangTimedMode) {
 		bangedModeTimer = timer;
@@ -570,26 +531,18 @@ void modeBanged() {
 	controller.bang();
 }
 void modeActivateSystem() {
-	if (DEBUG) {
-		Serial.println("modeActivateSystem()");
-	}
 	if (activateSystemTimer) {
 		return;
 	}
 	bangedTimer = 0;
 	prepareSystemTimer = 0;
 	activateSystemTimer = timer;
-	activateSystemModeTimer = timer;
 	// pulseTimer = timer;
 	// bangedBlink = controller.isBanged();
 	controller.debang();
-	Serial.println("ACTIVATE SYSTEM");
 }
 
 void wakeUp() {
-	if (DEBUG) {
-		Serial.println("wakeUp()");
-	}
 	sleeping = 0;
 	RGB rgb = controller.color->getRGB();
 	setRGB(rgb.r, rgb.g, rgb.b);
@@ -603,9 +556,6 @@ void stayAwake() {
 	}
 }
 void sleep() {
-	if (DEBUG) {
-		Serial.println("sleep()");
-	}
 	sleeping = 1;
 	Color color = Color(controller.color->getHSL());
 	float l = color.getLightness();
@@ -616,9 +566,6 @@ void sleep() {
 	setBangLED(b);
 }
 void hyperSleep() {
-	if (DEBUG) {
-		Serial.println("hyperSleep()");
-	}
 	sleeping = 2;
 	Color color = Color(controller.color->getHSL());
 	color.setLightness(0);
@@ -627,51 +574,64 @@ void hyperSleep() {
 	setBangLED(0);
 }
 
+void bootAnimation() {
+	// run thru all the colors the hue send to setRGB()
+	// delay(5000);
+	Color color = Color(0, 1.0, 0.0);
+	float percent;
+	for (unsigned int i = 0; i < 360; i++) {
+		percent = (float) i / 720;
+		color.setHue(i);
+		color.setLightness(percent);
+		setRGB(color.getRGB());
+		delay(5);
+	}
+}
+
 
 void setup() {
 	// set the LED_BANG_PIN as an output:
-	delay(3000);
+	delay(1000);
 	pinMode(LED_BANG_PIN, OUTPUT);
+	setBangLED(16);
+	delay(1000);
 	pinMode(LED_R_PIN, OUTPUT);
 	pinMode(LED_G_PIN, OUTPUT);
 	pinMode(LED_B_PIN, OUTPUT);
+	bootAnimation();
+	delay(1000);
 	pinMode(LED_LIGHTS_PIN, OUTPUT);
-
+	setLights(16);
+	delay(1000);
 	pinMode(ROTARY_ENCODER_M_SWT_PIN, INPUT_PULLUP);
 	pinMode(ROTARY_ENCODER_L_SWT_PIN, INPUT_PULLUP);
 	pinMode(ROTARY_ENCODER_R_SWT_PIN, INPUT_PULLUP);
-
+	setBangLED(32);
+	delay(1000);
 	/*
-	pinMode(ROTARY_ENCODER_LA_PIN, INPUT_PULLUP);
-	pinMode(ROTARY_ENCODER_LB_PIN, INPUT_PULLUP);
-	pinMode(ROTARY_ENCODER_RA_PIN, INPUT_PULLUP);
-	pinMode(ROTARY_ENCODER_RB_PIN, INPUT_PULLUP);
-	pinMode(ROTARY_ENCODER_MA_PIN, INPUT_PULLUP);
-	pinMode(ROTARY_ENCODER_MB_PIN, INPUT_PULLUP);
-
-	pinMode(ROTARY_ENCODER_LP_PIN, INPUT_PULLUP);
-	pinMode(ROTARY_ENCODER_RP_PIN, INPUT_PULLUP);
-	pinMode(ROTARY_ENCODER_MP_PIN, INPUT_PULLUP);
-	*/
-
-
-	// set the LED_BANG_PIN to the initial brightness:
 	Color color = Color(240, 1.0, 0.25);
 	setRGB(color.getRGB());
+	*/
+	
 	// setLights(32);
 	// setBangLED(32);
-
-	delay(3000);
 	timer = millis();
-	setLights(brightness);
-	setBangLED(brightness / 2);
 	if (DEBUG) {
 		Serial.begin(115200);
-		Serial.println("Bang Button Box - Assetto Corsa Competizione!");
+		setBangLED(128);
+		delay(100);
+		setBangLED(0);
+		delay(100);
+		setBangLED(128);
+		delay(100);
+		setBangLED(64);
 	}
+	debugln("Bang Evolution");
 	buttons.setDebounceTime(80);
 	setController(controllerIndex);
 	stayAwake();
+	setBangLED(brightness / 2);
+	setLights(brightness / 2);
 	
 	// TXLED0;
 	// RXLED0;
@@ -683,20 +643,14 @@ void setup() {
 	// sei();
 }
 
-void checkEncoders() {
-	// Serial.println("rotaryEncoderChanged");
-}
-
 void loop() {
 	timer = millis();
 
 	/* timer events */
 	if (!controllerReadyTimer && (timer - controllerReadyTimer > controllerReadyDelay)) {
 		controllerReadyTimer = 0;
-		if (DEBUG) {
-			Serial.print("Controller Ready: ");
-			Serial.println(controller.name);
-		}
+		debug("!Ready: ");
+		debugln(controller.name);
 	}
 
 
@@ -706,11 +660,11 @@ void loop() {
 		int newPosition = encoders[i].getPosition();
 		if (newPosition != encoderValue[i]) {
 			/*
-			Serial.print("Encoder: ");
-			Serial.print(i);
-			Serial.print(" | Position: ");
-			Serial.print(newPosition);
-			Serial.println(" |");
+			debug("Encoder: ");
+			debug(i);
+			debug(" | Position: ");
+			debug(newPosition);
+			debugln(" |");
 			*/
 			encoderValue[i] = newPosition;
 			encoderChanged = true;
@@ -759,23 +713,11 @@ void loop() {
 	/* debug events */
 	loopCount++;
 	if (timer - debugTimer > 10000) {
-		Serial.print("Loop: ");
-		Serial.print(loopCount);
+		debug("Loop: ");
+		debug(loopCount);
 
-		Serial.print(" | Feedback: ");
-		Serial.print(feedbackCount);
-		Serial.print(" | Timer: ");
-		Serial.print(feedbackTimer);
-		Serial.print(" | Duration: ");
-		Serial.print(feedbackDuration);
-		Serial.print(" | Time Left: ");
-		Serial.print(timer - feedbackTimer);
-
-
-		Serial.print(" | Controller: ");
-		Serial.print(controller.name);
-
-		Serial.println(" |");
+		debug(" | CTRL: ");
+		debugln(controller.name);
 		loopCount = 0;
 		debugTimer = timer;
 	}
@@ -783,7 +725,6 @@ void loop() {
 	if (prepareSystemTimer && timer - prepareSystemTimer > prepareSystemDuration && !activateSystemTimer) {
 		modeActivateSystem();
 	}
-	// check if activateSystemModeTimer is on and if it is on for more than activateSystemModeDuration and if it is not already in activateSystem
 
 
 	/* feedback event */
@@ -807,19 +748,15 @@ void loop() {
 			bangBlinkTimer = 0;
 			feedbackBlink = false;
 			setBangLED(brightness);
-			Serial.println("FEEDBACK OFF");
-		}
-		if (enhancedEncoderTimer) {
-			enhancedEncoderTimer = timer;
-		}
-		if (activateSystemTimer) {
-			activateSystemTimer = timer;
 		}
 	}
 	/* pulse event */
 	if (enhancedEncoderTimer) {
 		if (!bangBlinkTimer) {
 			bangBlinkTimer = timer;
+		}
+		if (feedbackTimer) {
+			enhancedEncoderTimer = timer;
 		}
 		if (timer - bangBlinkTimer > pulseInterval) {
 			bangBlinkTimer = timer;
@@ -836,7 +773,6 @@ void loop() {
 			bangBlinkTimer = 0;
 			pulseBlink = false;
 			setBangLED(brightness);
-			Serial.println("PULSE OFF");
 		}
 	}
 	/* bang events */
@@ -863,29 +799,26 @@ void loop() {
 			bangedBlink = !bangedBlink;
 		}
 	}
-	else {
-		// toggle mode
-	}
 	if (activateSystemTimer) {
 		if (!engineBlinkTimer) {
 			engineBlinkTimer = timer;
 		}
-		if (activateSystemTimer && timer - activateSystemTimer > activateSystemDuration) {
+		if (feedbackTimer) {
+			activateSystemTimer = timer;
+		}
+		if (timer - activateSystemTimer > activateSystemDuration) {
 			activateSystemTimer = 0;
 			activateSystemBlink = false;
 			engineBlinkTimer = 0;
 			setRGB(controller.color->getRGB());
-			setBangLED(brightness);
 		}
-		if (activateSystemTimer && timer - engineBlinkTimer > activateSystemInterval) {
+		if (timer - engineBlinkTimer > activateSystemInterval) {
 			engineBlinkTimer = timer;
 			if (activateSystemBlink) {
 				setRGB(controller.colorBanged->getRGB());
-				setBangLED(brightness);
 			}
 			else {
 				setRGB(controller.colorFeedback->getRGB());
-				setBangLED(0);
 			}
 			activateSystemBlink = !activateSystemBlink;
 		}
