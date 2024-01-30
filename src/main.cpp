@@ -5,6 +5,8 @@
 #include <HID-Project.h>
 #include <RotaryEncoder.h>
 
+#include <EEPROM.h>
+
 #include <Bang.h>
 #include <Game/BangDebug.h>
 #include <Game/AssettoCorsaCompetizione.h>
@@ -169,6 +171,10 @@ void stayAwake();
 void sleep();
 void hyperSleep();
 
+void bootAnimation();
+
+void saveSettings();
+
 Keypad buttons = Keypad(
 	makeKeymap(buttonsGrid),
 	matrixSenders,
@@ -227,40 +233,34 @@ Joystick_ joystick(
 	false, false, false // accelerator, brake, steering
 );
 
-
-
 Controller controllers[] = {
 	Controller(
 		"Bang Debug",
 		new BangDebug(),
 		new Color(0, 1.0, 0.5), // default hsl
 		new Color(300, 1.0, 0.5), // pressed hsl
-		new Color(240, 1.0, 0.5), // banged hsl
-		0.5
+		new Color(240, 1.0, 0.5) // banged hsl
 	),
 	Controller(
 		"Assetto Corsa Competizione",
 		new AssettoCorsaCompetizione(),
 		new Color(120, 1.0, 0.5), // default hsl
 		new Color(160, 1.0, 0.5), // pressed hsl
-		new Color(240, 1.0, 0.5), // banged hsl
-		0.5
+		new Color(240, 1.0, 0.5) // banged hsl
 	),
 	Controller(
 		"Joystick",
 		new GameJoystick(&joystick),
 		new Color(180, 1.0, 0.5),
 		new Color(190, 1.0, 0.5),
-		new Color(200, 1.0, 0.5),
-		0.5
+		new Color(200, 1.0, 0.5)
 	),
 	Controller(
 		"Keyboard",
 		new GameKeyboard(),
 		new Color(24, 1.0, 0.5),
 		new Color(40, 1.0, 0.5),
-		new Color(180, 1.0, 0.5),
-		0.5
+		new Color(180, 1.0, 0.5)
 	)
 };
 unsigned int controllerCount = sizeof(controllers) / sizeof(controllers[0]);
@@ -287,6 +287,7 @@ int minMax(double value, int min, int max) {
 	}
 	return round(value);
 };
+
 void setBrightness(unsigned char value) {
 	brightness = minMax(value, brightnessMinValue, brightnessMaxValue);
 	setLights(brightness);
@@ -354,6 +355,10 @@ void sendButton(Key button) {
 					bangTimedMode = !bangTimedMode;
 					debug("Bang Toggle Mode: ");
 					debugln(bangTimedMode);
+					modeDefault();
+				break;
+				case B_PIT_LIMITER:
+					saveSettings();
 					modeDefault();
 				break;
 			}
@@ -508,8 +513,11 @@ void modeDefault() {
 	bangedModeTimer = 0;
 	prepareSystemTimer = 0;
 	activateSystemTimer = 0;
+	setBrightness(brightness);
+	// controller.setIntensity((float) brightness / 255.0);
 	setRGB(controller.color->getRGB());
 	// get brightness from controller intensity as float and convert to 0-255 of min and max
+	/*
 	brightness = min(
 		max(
 			(unsigned char) (controller.getIntensity() * 255),
@@ -517,8 +525,7 @@ void modeDefault() {
 		),
 		brightnessMaxValue
 	);
-	setLights(brightness);
-	setBangLED(brightness);
+	*/
 	controller.debang();
 }
 void modeBanged() {
@@ -575,8 +582,6 @@ void hyperSleep() {
 }
 
 void bootAnimation() {
-	// run thru all the colors the hue send to setRGB()
-	// delay(5000);
 	Color color = Color(0, 1.0, 0.0);
 	float percent;
 	for (unsigned int i = 0; i < 360; i++) {
@@ -586,6 +591,37 @@ void bootAnimation() {
 		setRGB(color.getRGB());
 		delay(5);
 	}
+}
+
+void loadSettings() {
+	unsigned char c;
+	bool b;
+	c = EEPROM.read(0);
+	if (c != 255) {
+		brightness = c;
+	}
+	c = EEPROM.read(1);
+	if (c != 255) {
+		controllerIndex = c;
+	}
+	b = EEPROM.read(2);
+	if (b != 255) {
+		bangTimedMode = (bool) b;
+	}
+	debugln("loaded");
+}
+
+void saveSettings() {
+	if (EEPROM.read(0) != brightness) {
+		EEPROM.write(0, brightness);
+	}
+	if (EEPROM.read(1) != controllerIndex) {
+		EEPROM.write(1, controllerIndex);
+	}
+	if (EEPROM.read(2) != bangTimedMode) {
+		EEPROM.write(2, bangTimedMode);
+	}
+	debugln("saved");
 }
 
 
@@ -615,7 +651,6 @@ void setup() {
 	
 	// setLights(32);
 	// setBangLED(32);
-	timer = millis();
 	if (DEBUG) {
 		Serial.begin(115200);
 		setBangLED(128);
@@ -626,12 +661,14 @@ void setup() {
 		delay(100);
 		setBangLED(64);
 	}
-	debugln("Bang Evolution");
 	buttons.setDebounceTime(80);
+	debugln("Bang Evolution");
+	timer = millis();
+	loadSettings();
+	// setBrightness(brightness);
 	setController(controllerIndex);
 	stayAwake();
-	setBangLED(brightness / 2);
-	setLights(brightness / 2);
+	
 	
 	// TXLED0;
 	// RXLED0;
@@ -715,6 +752,12 @@ void loop() {
 	if (timer - debugTimer > 10000) {
 		debug("Loop: ");
 		debug(loopCount);
+		debug(" | B: ");
+		debug(brightness);
+		debug(" | C: ");
+		debug(controllerIndex);
+		debug(" | T: ");
+		debug(bangTimedMode);
 
 		debug(" | CTRL: ");
 		debugln(controller.name);
@@ -812,7 +855,7 @@ void loop() {
 			engineBlinkTimer = 0;
 			setRGB(controller.color->getRGB());
 		}
-		if (timer - engineBlinkTimer > activateSystemInterval) {
+		if (engineBlinkTimer && timer - engineBlinkTimer > activateSystemInterval) {
 			engineBlinkTimer = timer;
 			if (activateSystemBlink) {
 				setRGB(controller.colorBanged->getRGB());

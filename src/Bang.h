@@ -467,21 +467,18 @@ class Controller {
 		Color* color;
 		Color* colorFeedback;
 		Color* colorBanged;
-		float intensity;
 		Controller(
 			const char* name,
 			Game* game,
 			Color* color,
 			Color* colorFeedback,
-			Color* colorBanged,
-			float intensity = 0.5
+			Color* colorBanged
 		) {
 			this->name = name;
 			this->game = game;
 			this->color = color;
 			this->colorFeedback = colorFeedback;
 			this->colorBanged = colorBanged;
-			this->intensity = intensity;
 		};
 		void button(unsigned char button, bool pressed) {
 			this->game->button(button, pressed);
@@ -495,10 +492,10 @@ class Controller {
 			this->game->begin();
 		};
 		float getIntensity() {
-			return this->intensity;
+			return this->color->getLightness();
 		};
 		void setIntensity(float intensity) {
-			this->intensity = intensity;
+			this->color->setLightness(intensity);
 		};
 		void bang() {
 			this->game->bang();
