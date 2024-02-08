@@ -1,5 +1,5 @@
-#ifndef BANG_h
-	#include "Bang.h"
+#ifndef PINS_h
+	#define PINS_h
 #endif
 
 #define LED_BANG_PIN 13
@@ -14,8 +14,8 @@
 #define ROTARY_ENCODER_L_CL_PIN 0
 #define ROTARY_ENCODER_L_DT_PIN 1
 
-#define ROTARY_ENCODER_R_CL_PIN 2
-#define ROTARY_ENCODER_R_DT_PIN 7
+#define ROTARY_ENCODER_R_CL_PIN 7
+#define ROTARY_ENCODER_R_DT_PIN 2
 
 #define ROTARY_ENCODER_M_SWT_PIN 12
 #define ROTARY_ENCODER_L_SWT_PIN 14

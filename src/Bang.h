@@ -9,20 +9,13 @@
 	#include <HID-Project.h>
 #endif
 
-#ifndef DEBUG
-	#define DEBUG 1
-#endif
 
-#if DEBUG == 1
-	#define debug(x) Serial.print(x)
-	#define debugln(x) Serial.println(x)
-#else
-	#define debug(x)
-	#define debugln(x)
-#endif
+void setBangLED(unsigned char value);
+void modeDefault();
 
 // Inputs
 #define B_NULL 0
+
 #define B_BANG 1
 #define B_IGNITION 2
 #define B_ENGINE 3
@@ -31,15 +24,18 @@
 #define B_RAINLIGHT 6
 #define B_WIPER 7
 #define B_FLASH 8
-#define B_NAV_UP 9
-#define B_NAV_DOWN 10
-#define B_NAV_LEFT 11
-#define B_NAV_RIGHT 12
+
+#define B_MFD_PITSTOP 9
+#define B_MFD_STANDINGS 10
+#define B_MFD_POSITIONS 11
+#define B_MFD_ELECTRONICS 12
+
 #define B_NAV_SELECT 13
-#define B_MFD_ELECTRONICS 14
-#define B_MFD_PITSTOP 15
-#define B_MFD_POSITIONS 16
-#define B_MFD_STANDINGS 17
+#define B_NAV_UP 14
+#define B_NAV_DOWN 15
+#define B_NAV_LEFT 16
+#define B_NAV_RIGHT 17
+
 #define B_I 18
 #define B_LOVE 19
 #define B_RACING 20
@@ -58,10 +54,6 @@
 
 #define BANGED 29
 
-
-
-
-
 struct RGB {
 	unsigned char r;
 	unsigned char g;
@@ -79,43 +71,9 @@ class Color {
 		unsigned short hue;
 		float saturation;
 		float lightness;
-
 	public:
-		Color(HSL hsl) : hue(hsl.h), saturation(hsl.s), lightness(hsl.l) {}
-		/*
-		Color(RGB rgb) {
-			float r = rgb.r / 255.0;
-			float g = rgb.g / 255.0;
-			float b = rgb.b / 255.0;
-			float c_max = max(r, max(g, b));
-			float c_min = min(r, min(g, b));
-			float delta = c_max - c_min;
-			float h, s, l;
-			if (delta == 0) {
-				h = 0;
-			} else if (c_max == r) {
-				h = 60 * fmod(((g - b) / delta), 6);
-			} else if (c_max == g) {
-				h = 60 * (((b - r) / delta) + 2);
-			} else if (c_max == b) {
-				h = 60 * (((r - g) / delta) + 4);
-			}
-			if (h < 0) {
-				h += 360;
-			}
-			l = (c_max + c_min) / 2;
-			if (delta == 0) {
-				s = 0;
-			} else {
-				s = delta / (1 - abs(2 * l - 1));
-			}
-			this->hue = h;
-			this->saturation = s;
-			this->lightness = l;
-		}
-		*/
 		Color(unsigned short hue, float saturation, float lightness) : hue(hue), saturation(saturation), lightness(lightness) {}
-
+		Color(HSL hsl) : hue(hsl.h), saturation(hsl.s), lightness(hsl.l) {}
 		void setHSL(unsigned short hue, float saturation, float lightness) {
 			this->hue = hue;
 			this->saturation = saturation;
@@ -130,7 +88,6 @@ class Color {
 		void setLightness(float lightness) {
 			this->lightness = lightness;
 		}
-
 		unsigned short getHue() {
 			return hue;
 		}
@@ -184,7 +141,6 @@ class Color {
 			rgb.b = (b_temp + m) * 255;
 			return rgb;
 		}
-
 };
 
 class Game {
@@ -203,10 +159,12 @@ class Game {
 		int longestDelay = 500;
 		int tapDelay = 50;
 		int recurrenceDelay = 50;
-		// Joystick_ *joystick;
+		Joystick_* joystick;
 		Game() {};
-		virtual void button(unsigned char button, bool pressed) {};
+		virtual void input(unsigned char input, bool pressed) {};
 		virtual void begin() {
+			this->deBang();
+			this->deEnhance();
 			if (this->isKeyboard) {
 				Keyboard.begin();
 			}
@@ -215,6 +173,8 @@ class Game {
 			}
 		};
 		virtual void end() {
+			this->deBang();
+			this->deEnhance();
 			if (this->isKeyboard) {
 				Keyboard.end();
 			}
@@ -225,7 +185,7 @@ class Game {
 		virtual void bang() {
 			this->banged = true;
 		};
-		virtual void debang() {
+		virtual void deBang() {
 			this->banged = false;
 		};
 		virtual bool isBanged() {
@@ -234,13 +194,10 @@ class Game {
 		virtual void enhance() {
 			this->enhanced = true;
 			enhancedEncoderTimer = millis();
-			feedbackTimer = 0;
-			debugln("ENHANCE");
 		};
 		virtual void deEnhance() {
 			this->enhanced = false;
 			enhancedEncoderTimer = 0;
-			debugln("DE-ENHANCE");
 		};
 		/* keybaord */
 		void key(KeyboardKeycode keyChar, bool pressed) {
@@ -385,7 +342,6 @@ class Game {
 			*/
 			Consumer.releaseAll();
 		}
-
 		/* joystick */
 		/*
 		void joyPress(unsigned char button) {
@@ -457,7 +413,6 @@ class Game {
 			}
 		}
 		*/
-
 };
 
 class Controller {
@@ -480,11 +435,10 @@ class Controller {
 			this->colorFeedback = colorFeedback;
 			this->colorBanged = colorBanged;
 		};
-		void button(unsigned char button, bool pressed) {
-			this->game->button(button, pressed);
+		void input(unsigned char input, bool pressed) {
+			this->game->input(input, pressed);
 		};
 		void end() {
-			// this->debang();
 			this->game->end();
 		};
 		void begin() {
@@ -500,8 +454,8 @@ class Controller {
 		void bang() {
 			this->game->bang();
 		};
-		void debang() {
-			this->game->debang();
+		void deBang() {
+			this->game->deBang();
 		};
 		bool isBanged() {
 			return this->game->isBanged();

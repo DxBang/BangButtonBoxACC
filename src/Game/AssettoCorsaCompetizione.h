@@ -2,29 +2,22 @@
 	#include "Bang.h"
 #endif
 
-
-
 class AssettoCorsaCompetizione : public Game {
-
 	public:
 		AssettoCorsaCompetizione() {
 			isKeyboard = true;
 		}
-		void button(unsigned char button, bool pressed) override {
-			debug("AssettoCorsaCompetizione: ");
-			debug(button);
+		void input(unsigned char input, bool pressed) override {
+			debug(input);
 			debug(" ");
 			debugln(pressed);
-			
-			switch (button) {
+			switch (input) {
+				case B_IGNITION:
+				case BANGED + B_IGNITION:
+					this->ignition(pressed);
+				break;
 				case B_ENGINE:
 					this->startEngine(pressed);
-				break;
-				case BANGED + B_ENGINE:
-					this->bangedStartEngine(pressed);
-				break;
-				case B_IGNITION:
-					this->ignition(pressed);
 				break;
 				case B_PIT_LIMITER:
 					this->pitLimiter(pressed);
@@ -32,26 +25,29 @@ class AssettoCorsaCompetizione : public Game {
 				case B_LIGHT:
 					this->cycleLights(pressed);
 				break;
-				case BANGED + B_LIGHT:
-					this->volumeUp(pressed, 5);
-				break;
 				case B_FLASH:
 					this->flash(pressed);
-				break;
-				case BANGED + B_FLASH:
-					this->volumeDown(pressed, 5);
 				break;
 				case B_RAINLIGHT:
 					this->rainLights(pressed);
 				break;
-				case BANGED + B_RAINLIGHT:
-					this->cycleMap(pressed);
-				break;
 				case B_WIPER:
 					this->cycleWiper(pressed);
 				break;
-				case BANGED + B_WIPER:
-					this->cycleHUD(pressed);
+				case B_MFD_PITSTOP:
+					this->mfdPitstop(pressed);
+				break;
+				case B_MFD_POSITIONS:
+					this->mfdPositions(pressed);
+				break;
+				case B_MFD_STANDINGS:
+					this->mfdStandings(pressed);
+				break;
+				case B_MFD_ELECTRONICS:
+					this->mfdElectronics(pressed);
+				break;
+				case B_NAV_SELECT:
+					this->select(pressed);
 				break;
 				case B_NAV_UP:
 					this->navigationUp(pressed);
@@ -65,13 +61,84 @@ class AssettoCorsaCompetizione : public Game {
 				case B_NAV_RIGHT:
 					this->navigationRight(pressed);
 				break;
-				case B_NAV_SELECT:
-					this->select(pressed);
+				// banged buttons
+				/*
+				case BANGED + B_IGNITION: // same as B_IGNITION
+					if (pressed) {
+						this->ignition(true);
+						delay(this->mediumDelay);
+						this->ignition(false);
+						// blink BangLED for 5 seconds at a 1s interval
+						for (int i = 0; i < 5; i++) {
+							setBangLED(0);
+							delay(500);
+							setBangLED(brightness);
+							delay(500);
+						}
+						this->ignition(true);
+						delay(this->mediumDelay);
+						this->ignition(false);
+						modeDefault();
+						// blink BangLED for 25 seconds at a 1s interval
+						for (int i = 0; i < 25; i++) {
+							setBangLED(0);
+							delay(500);
+							setBangLED(brightness);
+							delay(500);
+						}
+						this->startEngine(true);
+						// wait 1 seconds
+						delay(1000);
+						this->startEngine(false);
+					}
 				break;
-
-
-
-				
+				*/
+				case BANGED + B_ENGINE:
+					this->bangedStartEngine(pressed);
+				break;
+				case BANGED + B_PIT_LIMITER:
+					this->timeTable(pressed);
+				break;
+				case BANGED + B_LIGHT:
+					this->cycleHUD(pressed);
+				break;
+				case BANGED + B_FLASH:
+					this->addHighlight(pressed);
+				break;
+				case BANGED + B_RAINLIGHT:
+					this->cycleMap(pressed);
+				break;
+				case BANGED + B_WIPER:
+					this->names(pressed);
+				break;
+				case BANGED + B_MFD_PITSTOP:
+					this->raceLogic(pressed);
+				break;
+				case BANGED + B_MFD_POSITIONS:
+					this->dashboardUp(pressed);
+				break;
+				case BANGED + B_MFD_STANDINGS:
+					this->dashboardDown(pressed);
+				break;
+				case BANGED + B_MFD_ELECTRONICS:
+					this->indicatorRight(pressed);
+				break;
+				case BANGED + B_NAV_SELECT:
+					this->indicatorLeft(pressed);
+				break;
+				case BANGED + B_NAV_UP:
+					this->bonnet(pressed);
+				break;
+				case BANGED + B_NAV_DOWN:
+					this->cycleCamera(pressed);
+				break;
+				case BANGED + B_NAV_LEFT:
+					this->cockpit(pressed);
+				break;
+				case BANGED + B_NAV_RIGHT:
+					this->chase(pressed);
+				break;
+				// push rotary encoders
 				case B_ENCODER_M_PH:
 				case B_ENCODER_L_PH:
 				case B_ENCODER_R_PH:
@@ -82,7 +149,8 @@ class AssettoCorsaCompetizione : public Game {
 						this->enhance();
 					}
 				break;
-
+				// rotary encoders
+				// middle
 				case R_ENCODER_M_UP:
 					if (this->enhanced) {
 						this->engineMapUp(pressed, 3);
@@ -99,6 +167,7 @@ class AssettoCorsaCompetizione : public Game {
 						this->engineMapDown(pressed, 1);
 					}
 				break;
+				// left
 				case R_ENCODER_L_UP:
 					if (this->enhanced) {
 						this->brakeBiasUp(pressed, 10);
@@ -116,6 +185,7 @@ class AssettoCorsaCompetizione : public Game {
 						this->brakeBiasDown(pressed, 5);
 					}
 				break;
+				// right
 				case R_ENCODER_R_UP:
 					if (this->enhanced) {
 						this->tractionControlUp(pressed, 3);
@@ -132,6 +202,7 @@ class AssettoCorsaCompetizione : public Game {
 						this->tractionControlDown(pressed, 1);
 					}
 				break;
+				// banged rotary encoders
 				case BANGED + R_ENCODER_L_UP:
 					if (this->enhanced) {
 						this->antilockBrakingSystemUp(pressed, 3);
@@ -165,45 +236,17 @@ class AssettoCorsaCompetizione : public Game {
 					}
 				break;
 				case BANGED + R_ENCODER_M_UP:
-					this->volumeUp(pressed, 5);
+					this->fovUp(pressed, 5);
 				break;
 				case BANGED + R_ENCODER_M_DN:
-					this->volumeDown(pressed, 5);
-				break;
-
-
-
-				case B_MFD_PITSTOP:
-					this->mfdPitstop(pressed);
-				break;
-				case BANGED + B_MFD_PITSTOP:
-					this->raceLogic(pressed);
-				break;
-				case B_MFD_STANDINGS:
-					this->mfdStandings(pressed);
-				break;
-				case BANGED + B_MFD_STANDINGS:
-					this->dashboardUp(pressed);
-				break;
-				case B_MFD_POSITIONS:
-					this->mfdPositions(pressed);
-				break;
-				case BANGED + B_MFD_POSITIONS:
-					this->dashboardDown(pressed);
-				break;
-				case B_MFD_ELECTRONICS:
-					this->mfdElectronics(pressed);
-				break;
-				case BANGED + B_MFD_ELECTRONICS:
-					this->cycleMFD(pressed);
+					this->fovDown(pressed, 5);
 				break;
 				default:
 					debug("Unknown button: ");
-					debugln(button);
+					debugln(input);
 				break;
 			}
 		}
-
 	private:
 		void startEngine(bool pressed) {
 			// S
@@ -662,7 +705,7 @@ class AssettoCorsaCompetizione : public Game {
 				this->keyRelease(KEY_LEFT_CTRL);
 			}
 		}
-		void specialUp(bool pressed, char times = 1) {
+		void fovUp(bool pressed, char times = 1) {
 			// CTRL + Right Arrow
 			if (pressed) {
 				/*
@@ -673,8 +716,8 @@ class AssettoCorsaCompetizione : public Game {
 				this->keyRelease(KEY_LEFT_CTRL);
 			}
 		}
-		void specialDown(bool pressed, char times = 1) {
-			// CTRL + Left Arrow
+		void fovDown(bool pressed, char times = 1) {
+			// CTRL + Left ArrowEEE
 			if (pressed) {
 				/*
 				debugln("specialDown: CTRL + Left Arrow");

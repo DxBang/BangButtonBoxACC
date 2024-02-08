@@ -1,178 +1,48 @@
 #include <Arduino.h>
-#include <Settings.h>
 #include <Keypad.h>
 #include <Joystick.h>
 #include <HID-Project.h>
 #include <RotaryEncoder.h>
-
 #include <EEPROM.h>
 
+#include <Settings.h>
 #include <Bang.h>
-#include <Game/BangDebug.h>
+#include <Pins.h>
+
+#if DEBUG == 1
+	#include <Game/BangDebug.h>
+#endif
 #include <Game/AssettoCorsaCompetizione.h>
 #include <Game/GameJoystick.h>
 #include <Game/GameKeyboard.h>
 
 
-// 10 mins / 900000 ( 5000 debug )
-#define SLEEP_TIME 900000
-// 30 mins / 1800000 ( 20000 debug )
-#define HYPER_SLEEP_TIME 1800000
-
-/*
-D0	Rotary Encoder Left CLK
-D1	Rotary Encoder Left DT
-D2	Rotary Encoder Right DT
-D3	Lights
-D4	Matrix Col 2
-D5	Matrix Col 3
-D6	Matrix Col 4
-D7	Rotary Encoder Right CLK
-D8	Rotary Encoder Middle CLK
-D9	RGB LED R
-D10	RGB LED G
-D11	RGB LED B
-D12	Rotary Encoder Middle SWT
-D13	Bang LED
-D14	Rotary Encoder Left SWT
-D15	Rotary Encoder Right SWT
-D16	Rotary Encoder Middle DT
-D17	Can't use for output
-A0	Matrix Row 1
-A1	Matrix Row 2
-A2	Matrix Row 3
-A3	Matrix Row 4
-A4	Matrix Row 5
-A5	Matrix Col 1
-
-~ = PWM
-^ = INT
-/ = PCINT
-
-              Board: Arduino Micro
-                 ------USB------
-        Bang LED | ~D13    D12 | RE Middle SWT
-                 | 3V3   ~/D11 | RGB LED B
-                 | AREF  ~/D10 | RGB LED G
-    Matrix Row 1 | A0     ~/D9 | RGB LED R
-    Matrix Row 2 | A1      /D8 | RE Middle CLK
-    Matrix Row 3 | A2      ^D7 | RE Right CLK
-    Matrix Row 4 | A3      ~D6 | Matrix Col 4
-    Matrix Row 5 | A4      ~D5 | Matrix Col 3
-    Matrix Col 1 | A5       D4 | Matrix Col 2
-                 |         ~D3 | Lights
-                 |        ~^D2 | RE Right DT
-       5V for RE | 5V      GND | GND
-                 | RST     RST |
-             GND | GND     ^D0 | RE Left CLK
-                 | VIN     ^D1 | RE Left DT
-    RE Left SWT  | D14    /D17 | 
-   RE Right SWT  | D15    /D16 | RE Middle DT
-                 ---------------
-
-
-
-Input and modes:
-Bang Button
-	- Single Press: Bang, Timed or Toggled
-	- Single Press while Banged: Debang
-	- Hold: System Settings
-
-System Settings
-	- Engine Button: Change Profile
-	- Ignition Button: Toggle Bang Mode
-	- encoderMiddle Up/Dn: Change Brightness
-	- encoderMiddle Push: Encoder Multiplier x10
-
-
-Assetto Corsa Competizione Profile
-	Default Functional Buttons 
-		ignition: Ignition
-		engine: Engine
-		pit: Pit Limiter
-		light: Lights
-		rain: Rain Light
-		flash: Flash
-		wiper: Wiper
-		position: MFD Position
-		standing: MFD Standing
-		pitstop: MFD Pitstop
-		electronics: MFD Electronics
-		select: Nav Select
-		up: Nav Up
-		down: Nav Down
-		left: Nav Left
-		right: Nav Right
-	Default Functional Encoders
-		encoderLeft Up/Dn: Brake Bias
-		encoderRight Up/Dn: Traction Control
-		encoderMiddle Up/Dn: Engine Map
-		encoderLeft Push: Encoder Multiplier
-		encoderRight Push: Encoder Multiplier
-		encoderMiddle Push: Encoder Multiplier
-	Banged Functional Buttons:
-		ignition: Ignition
-		engine: Engine 1 sec.
-		pit: Time Table
-		light: HUD
-		rain: Map
-		flash: Add highlight
-		wiper: Names
-		position: Dashboard up
-		standing: Dashboard down
-		pitstop: Race Logic
-		electronics: Indicator Right
-		select: Indicator Left
-		up: Camera Bonnet
-		down: Cycle Camera
-		left: Camera Cockpit
-		right: Camera Chase
-	Banged Functional Encoders:
-		encoderLeft Up/Dn: Anti-Brake System
-		encoderRight Up/Dn: Traction Control Cut
-		encoderMiddle Up/Dn: FOV
-		encoderLeft Push: Encoder Multiplier
-		encoderRight Push: Encoder Multiplier
-		encoderMiddle Push: Encoder Multiplier
-
-Spade crimps
-	- 2.0mm x 0.5
-	- 2.8mm x 0.5
-*/
-
-
-// #include <Smurf.h>
-// #include <Dev.h>
-#include <Pins.h>
-
-
-
-
 // prepare functions
+int minMax(double value, int min, int max);
+void setController(unsigned char index);
+void sendButton(Key button);
+void sendRotaryPush(unsigned char button, bool pressed);
+void sendRotaryEncoder(unsigned char index, char direction);
+
+void setBrightness(unsigned char value);
 void setRGB(unsigned char r, unsigned char g, unsigned char b);
 void setRGB(RGB rgb);
 void setHSL(HSL hsl);
 void setBangLED(unsigned char value);
 void setLights(unsigned char value);
-void setController(unsigned char index);
-
-void feedback();
 
 void modeDefault();
 void modeBanged();
 void modeActivateSystem();
 
-void sendButton(Key button);
-void sendRotaryPush(unsigned char button, bool pressed);
-void sendRotaryEncoder(unsigned char index, char direction);
-
 void wakeUp();
 void stayAwake();
 void sleep();
-void hyperSleep();
+void hybridSleep();
 
 void bootAnimation();
 
+void loadSettings();
 void saveSettings();
 
 Keypad buttons = Keypad(
@@ -223,10 +93,9 @@ unsigned char rotaryPushStates[NUM_ENCODERS] = {
 	0
 };
 
-
 Joystick_ joystick(
-	JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_JOYSTICK,
-	BANGED * 2, 1, // button count, hat switch count
+	JOYSTICK_DEFAULT_REPORT_ID, JOYSTICK_TYPE_GAMEPAD,
+	BANGED * 2, 2, // button count, hat switch count
 	false, false, false, // x, y, z
 	false, false, false, // rx, ry, rz
 	false, false, // rudder, throttle
@@ -234,26 +103,28 @@ Joystick_ joystick(
 );
 
 Controller controllers[] = {
+	#if DEBUG == 1
+		Controller(
+			"Debug",
+			new BangDebug(),
+			new Color(0, 1.0, 0.5), // default hsl
+			new Color(300, 1.0, 0.5), // pressed hsl
+			new Color(240, 1.0, 0.5) // banged hsl
+		),
+	#endif
 	Controller(
-		"Bang Debug",
-		new BangDebug(),
-		new Color(0, 1.0, 0.5), // default hsl
-		new Color(300, 1.0, 0.5), // pressed hsl
-		new Color(240, 1.0, 0.5) // banged hsl
-	),
-	Controller(
-		"Assetto Corsa Competizione",
+		"ACC",
 		new AssettoCorsaCompetizione(),
 		new Color(120, 1.0, 0.5), // default hsl
-		new Color(160, 1.0, 0.5), // pressed hsl
+		new Color(180, 1.0, 0.5), // pressed hsl
 		new Color(240, 1.0, 0.5) // banged hsl
 	),
 	Controller(
 		"Joystick",
 		new GameJoystick(&joystick),
-		new Color(180, 1.0, 0.5),
-		new Color(190, 1.0, 0.5),
-		new Color(200, 1.0, 0.5)
+		new Color(200, 1.0, 0.5),
+		new Color(250, 1.0, 0.5),
+		new Color(300, 1.0, 0.5)
 	),
 	Controller(
 		"Keyboard",
@@ -267,6 +138,16 @@ unsigned int controllerCount = sizeof(controllers) / sizeof(controllers[0]);
 Controller controller = controllers[controllerIndex];
 
 // functions
+int minMax(double value, int min, int max) {
+	if (value < min) {
+		value = min;
+	}
+	else if (value > max) {
+		value = max;
+	}
+	return round(value);
+};
+
 void setController(unsigned char index) {
 	debug("Setting Controller: ");
 	debugln(index);
@@ -278,33 +159,9 @@ void setController(unsigned char index) {
 	controllerReadyTimer = timer;
 }
 
-int minMax(double value, int min, int max) {
-	if (value < min) {
-		value = min;
-	}
-	else if (value > max) {
-		value = max;
-	}
-	return round(value);
-};
-
-void setBrightness(unsigned char value) {
-	brightness = minMax(value, brightnessMinValue, brightnessMaxValue);
-	setLights(brightness);
-	setBangLED(brightness);
-	float l = (float) brightness / 255;
-	debug("B: ");
-	debug(brightness);
-	debug(" | ");
-	debugln(l);
-	controller.color->setLightness(l);
-	controller.colorBanged->setLightness(l);
-	controller.colorFeedback->setLightness(l);
-}
-
 void sendButton(Key button) {
 	stayAwake();
-	if (!controllerReadyTimer) {
+	if (controllerReadyTimer) {
 		debugln("!Ready");
 		return;
 	}
@@ -312,24 +169,18 @@ void sendButton(Key button) {
 	switch (button.kstate) {
 		case PRESSED:
 			pressed = true;
-			break;
+		break;
 		case RELEASED:
-			break;
+		break;
 		default:
 			return;
 	}
-	/*
-	debug("Button: ");
-	debug(button.kchar);
-	debug(" | ");
-	debug(button.kcode);
-	debug(" | ");
-	debugln(button.kstate);
-	*/
-	
-	
 	if (button.kchar == B_BANG) {
 		if (pressed) {
+			if (activateSystemTimer) {
+				modeDefault();
+				return;
+			}
 			prepareSystemTimer = timer;
 			if (controller.isBanged()) {
 				modeDefault();
@@ -343,7 +194,7 @@ void sendButton(Key button) {
 	}
 	if (pressed) {
 		feedbackCount++;
-		feedback();
+		feedbackTimer = timer;
 		// feedback(true);
 		if (activateSystemTimer) {
 			switch (button.kchar) {
@@ -355,28 +206,22 @@ void sendButton(Key button) {
 					bangTimedMode = !bangTimedMode;
 					debug("Bang Toggle Mode: ");
 					debugln(bangTimedMode);
-					modeDefault();
 				break;
 				case B_PIT_LIMITER:
 					saveSettings();
-					modeDefault();
 				break;
 			}
 			return;
 		}
 		if (controller.isBanged()) {
-			controller.button((button.kchar + BANGED), pressed);
+			controller.input((button.kchar + BANGED), pressed);
 			return;
 		}
-		// modeFeedback();
-		controller.button(button.kchar, pressed);
+		controller.input(button.kchar, pressed);
 		return;
 	}
 	if (controller.isBanged()) {
-		controller.button((button.kchar + BANGED), pressed);
-		if (!bangTimedMode) {
-			controller.debang();
-		}
+		controller.input((button.kchar + BANGED), pressed);
 		if (feedbackCount) {
 			feedbackCount--;
 		}
@@ -385,48 +230,34 @@ void sendButton(Key button) {
 	if (feedbackCount) {
 		feedbackCount--;
 	}
-	controller.button(button.kchar, pressed);
+	controller.input(button.kchar, pressed);
 }
 void sendRotaryPush(unsigned char index, bool pressed) {
 	stayAwake();
-	if (!controllerReadyTimer) {
+	if (controllerReadyTimer) {
 		debugln("!Ready");
 		return;
 	}
 	unsigned char button = rotaryPushButtonIndex[index];
-	/*
-	debug("Rotary Push: ");
-	debug(button);
-	debug(" | ");
-	debugln(pressed);
-	*/
 	if (pressed) {
 		feedbackCount++;
-		feedback();
+		feedbackTimer = timer;
 	}
 	else if (feedbackCount) {
 		feedbackCount--;
 	}
 	if (controller.isBanged()) {
-		controller.button((button + BANGED), pressed);
-		// controller.debang();
+		controller.input((button + BANGED), pressed);
 		return;
 	}
-	controller.button(button, pressed);
+	controller.input(button, pressed);
 }
 void sendRotaryEncoder(unsigned char index, char direction) {
 	stayAwake();
-	if (!controllerReadyTimer) {
+	if (controllerReadyTimer) {
 		debugln("!Ready");
 		return;
 	}
-	/*
-	debug("Rotary Encoder: ");
-	debug(index);
-	debug(" | ");
-	debugln(direction);
-	*/
-	
 	if (activateSystemTimer) {
 		switch (index) {
 			case 0:
@@ -441,29 +272,26 @@ void sendRotaryEncoder(unsigned char index, char direction) {
 		}
 		return;
 	}
-
+	feedbackTimer = timer;
 	switch (direction) {
 		case 1:
-			feedback();
 			if (controller.isBanged()) {
-				controller.button((rotaryUpPins[index] + BANGED), true);
+				controller.input((rotaryUpPins[index] + BANGED), true);
 				return;
 			}
-			controller.button(rotaryUpPins[index], true);
+			controller.input(rotaryUpPins[index], true);
 			return;
 		case -1:
-			feedback();
 			if (controller.isBanged()) {
-				controller.button((rotaryDownPins[index] + BANGED), true);
+				controller.input((rotaryDownPins[index] + BANGED), true);
 				return;
 			}
-			controller.button(rotaryDownPins[index], true);
+			controller.input(rotaryDownPins[index], true);
 			return;
 		default:
 			return;
 	}
 }
-
 
 void setRGB(unsigned char r, unsigned char g, unsigned char b) {
 	analogWrite(LED_R_PIN, r);
@@ -477,17 +305,6 @@ void setHSL(HSL hsl) {
 	Color color = Color(hsl.h, hsl.s, hsl.l);
 	setRGB(color.getRGB());
 }
-void setLights(unsigned char value) {
-	analogWrite(LED_LIGHTS_PIN, 
-		min(
-			max(
-				value,
-				brightnessMinValue
-			),
-			brightnessMaxValue
-		)
-	);
-}
 void setBangLED(unsigned char value) {
 	analogWrite(LED_BANG_PIN, 
 		min(
@@ -499,42 +316,43 @@ void setBangLED(unsigned char value) {
 		)
 	);
 }
-
-void feedback() {
-	if (!feedbackTimer) {
-		feedbackTimer = timer;
-	}
+void setLights(unsigned char value) {
+	analogWrite(LED_LIGHTS_PIN, 
+		min(
+			max(
+				value,
+				brightnessMinValue
+			),
+			brightnessMaxValue
+		)
+	);
+}
+void setBrightness(unsigned char value) {
+	brightness = minMax(value, brightnessMinValue, brightnessMaxValue);
+	setLights(brightness);
+	setBangLED(brightness);
+	float l = (float) brightness / 255;
+	controller.color->setLightness(l);
+	controller.colorBanged->setLightness(l);
+	controller.colorFeedback->setLightness(l);
 }
 
 void modeDefault() {
 	feedbackTimer = 0;
 	enhancedEncoderTimer = 0;
 	bangedTimer = 0;
-	bangedModeTimer = 0;
 	prepareSystemTimer = 0;
 	activateSystemTimer = 0;
 	setBrightness(brightness);
-	// controller.setIntensity((float) brightness / 255.0);
 	setRGB(controller.color->getRGB());
-	// get brightness from controller intensity as float and convert to 0-255 of min and max
-	/*
-	brightness = min(
-		max(
-			(unsigned char) (controller.getIntensity() * 255),
-			brightnessMinValue
-		),
-		brightnessMaxValue
-	);
-	*/
-	controller.debang();
+	controller.deBang();
+	controller.deEnhance();
 }
 void modeBanged() {
 	setRGB(controller.colorBanged->getRGB());
-	if (!bangTimedMode) {
-		bangedModeTimer = timer;
+	if (bangTimedMode) {
+		bangedTimer = timer;
 	}
-	bangedTimer = timer;
-	// bangedTimer = timer;
 	controller.bang();
 }
 void modeActivateSystem() {
@@ -544,9 +362,8 @@ void modeActivateSystem() {
 	bangedTimer = 0;
 	prepareSystemTimer = 0;
 	activateSystemTimer = timer;
-	// pulseTimer = timer;
-	// bangedBlink = controller.isBanged();
-	controller.debang();
+	controller.deBang();
+	controller.deEnhance();
 }
 
 void wakeUp() {
@@ -572,7 +389,7 @@ void sleep() {
 	setLights(b);
 	setBangLED(b);
 }
-void hyperSleep() {
+void hybridSleep() {
 	sleeping = 2;
 	Color color = Color(controller.color->getHSL());
 	color.setLightness(0);
@@ -605,12 +422,10 @@ void loadSettings() {
 		controllerIndex = c;
 	}
 	b = EEPROM.read(2);
-	if (b != 255) {
+	if (b) {
 		bangTimedMode = (bool) b;
 	}
-	debugln("loaded");
 }
-
 void saveSettings() {
 	if (EEPROM.read(0) != brightness) {
 		EEPROM.write(0, brightness);
@@ -621,36 +436,39 @@ void saveSettings() {
 	if (EEPROM.read(2) != bangTimedMode) {
 		EEPROM.write(2, bangTimedMode);
 	}
-	debugln("saved");
+	for (unsigned char i = 0; i < 3; i++) {
+		delay(100);
+		setLights(0);
+		delay(100);
+		setLights(brightness);
+	}
 }
 
-
 void setup() {
-	// set the LED_BANG_PIN as an output:
-	delay(1000);
+	delay(500);
 	pinMode(LED_BANG_PIN, OUTPUT);
-	setBangLED(16);
-	delay(1000);
+	pinMode(LED_LIGHTS_PIN, OUTPUT);
 	pinMode(LED_R_PIN, OUTPUT);
 	pinMode(LED_G_PIN, OUTPUT);
 	pinMode(LED_B_PIN, OUTPUT);
-	bootAnimation();
-	delay(1000);
-	pinMode(LED_LIGHTS_PIN, OUTPUT);
-	setLights(16);
-	delay(1000);
 	pinMode(ROTARY_ENCODER_M_SWT_PIN, INPUT_PULLUP);
 	pinMode(ROTARY_ENCODER_L_SWT_PIN, INPUT_PULLUP);
 	pinMode(ROTARY_ENCODER_R_SWT_PIN, INPUT_PULLUP);
+	/*
+	// INPUT_PULLUP not needed as they are set in RotaryEncoder.cpp
+	pinMode(ROTARY_ENCODER_M_DT_PIN, INPUT_PULLUP);
+	pinMode(ROTARY_ENCODER_M_CL_PIN, INPUT_PULLUP);
+	pinMode(ROTARY_ENCODER_L_DT_PIN, INPUT_PULLUP);
+	pinMode(ROTARY_ENCODER_L_CL_PIN, INPUT_PULLUP);
+	pinMode(ROTARY_ENCODER_R_DT_PIN, INPUT_PULLUP);
+	pinMode(ROTARY_ENCODER_R_CL_PIN, INPUT_PULLUP);
+	*/
+	bootAnimation();
+	delay(1000);
 	setBangLED(32);
 	delay(1000);
-	/*
-	Color color = Color(240, 1.0, 0.25);
-	setRGB(color.getRGB());
-	*/
-	
-	// setLights(32);
-	// setBangLED(32);
+	setLights(32);
+	delay(1000);
 	if (DEBUG) {
 		Serial.begin(115200);
 		setBangLED(128);
@@ -659,50 +477,41 @@ void setup() {
 		delay(100);
 		setBangLED(128);
 		delay(100);
-		setBangLED(64);
+		setBangLED(32);
 	}
-	buttons.setDebounceTime(80);
+	buttons.setDebounceTime(50);
 	debugln("Bang Evolution");
 	timer = millis();
 	loadSettings();
-	// setBrightness(brightness);
 	setController(controllerIndex);
 	stayAwake();
-	
-	
 	// TXLED0;
 	// RXLED0;
 	// pinMode(17, OUTPUT);
 	// digitalWrite(17, HIGH);
-
 	// PCICR |= (1 << PCIE0);
 	// PCMSK0 |= (1 << PCINT2) | (1 << PCINT4);
 	// sei();
 }
 
 void loop() {
-	timer = millis();
-
 	/* timer events */
-	if (!controllerReadyTimer && (timer - controllerReadyTimer > controllerReadyDelay)) {
+	timer = millis();
+	if (controllerReadyTimer) {
+		if (timer - controllerReadyTimer < controllerReadyDelay) {
+			setBangLED(0);
+			delay(50);
+			setBangLED(brightness);
+			delay(50);
+			return;
+		}
 		controllerReadyTimer = 0;
-		debug("!Ready: ");
-		debugln(controller.name);
 	}
-
-
 	/* input events */
 	for (unsigned char i = 0; i < NUM_ENCODERS; i++) {
 		encoders[i].tick();
 		int newPosition = encoders[i].getPosition();
 		if (newPosition != encoderValue[i]) {
-			/*
-			debug("Encoder: ");
-			debug(i);
-			debug(" | Position: ");
-			debug(newPosition);
-			debugln(" |");
-			*/
 			encoderValue[i] = newPosition;
 			encoderChanged = true;
 			char direction = (char) encoders[i].getDirection();
@@ -727,49 +536,36 @@ void loop() {
 			}
 		}
 	}
-
 	/* sleep events */
 	switch (sleeping) {
 		case 1: // unit is in hyper sleep...
-			delay(40);
-			if (timer - sleepTimer > HYPER_SLEEP_TIME) {
-				hyperSleep();
+			delay(30);
+			if (timer - sleepTimer > hybridSleepDelay) {
+				hybridSleep();
 			}
 		break;
 		case 2: // unit is in hyper sleep...
-			delay(80);
+			delay(60);
 		break;
 		default:
-			delayMicroseconds(100);
-			if (timer - sleepTimer > SLEEP_TIME) {
+			// delayMicroseconds(50);
+			if (timer - sleepTimer > sleepDelay) {
 				sleep();
 			}
 		break;
 	}
-
 	/* debug events */
-	loopCount++;
-	if (timer - debugTimer > 10000) {
-		debug("Loop: ");
-		debug(loopCount);
-		debug(" | B: ");
-		debug(brightness);
-		debug(" | C: ");
-		debug(controllerIndex);
-		debug(" | T: ");
-		debug(bangTimedMode);
-
-		debug(" | CTRL: ");
-		debugln(controller.name);
-		loopCount = 0;
-		debugTimer = timer;
-	}
-	// check if prepareSystemTimer is on and if it is on for more than prepareSystemDuration and if it is not already in activateSystemMode
-	if (prepareSystemTimer && timer - prepareSystemTimer > prepareSystemDuration && !activateSystemTimer) {
-		modeActivateSystem();
-	}
-
-
+	#if DEBUG == 1
+		loopCount++;
+		if (timer - debugTimer > 10000) {
+			debug("Loop: ");
+			debug(loopCount);
+			debug(" | CTRL: ");
+			debugln(controller.name);
+			loopCount = 0;
+			debugTimer = timer;
+		}
+	#endif
 	/* feedback event */
 	if (feedbackTimer) {
 		if (!bangBlinkTimer) {
@@ -824,12 +620,12 @@ void loop() {
 			bangBlinkTimer = timer;
 		}
 		if (timer - bangedTimer > bangedDuration) {
-			controller.debang();
+			Serial.println("!banged timed");
 			bangedTimer = 0;
 			bangBlinkTimer = 0;
 			bangedBlink = false;
 			setRGB(controller.color->getRGB());
-			setBangLED(brightness);
+			controller.deBang();
 		}
 		if (timer - bangBlinkTimer > bangedInterval) {
 			bangBlinkTimer = timer;
@@ -842,18 +638,17 @@ void loop() {
 			bangedBlink = !bangedBlink;
 		}
 	}
+	/* prepare tp emter system */
+	if (prepareSystemTimer && timer - prepareSystemTimer > prepareSystemDuration && !activateSystemTimer) {
+		modeActivateSystem();
+	}
+	/* system events */
 	if (activateSystemTimer) {
 		if (!engineBlinkTimer) {
 			engineBlinkTimer = timer;
 		}
 		if (feedbackTimer) {
 			activateSystemTimer = timer;
-		}
-		if (timer - activateSystemTimer > activateSystemDuration) {
-			activateSystemTimer = 0;
-			activateSystemBlink = false;
-			engineBlinkTimer = 0;
-			setRGB(controller.color->getRGB());
 		}
 		if (engineBlinkTimer && timer - engineBlinkTimer > activateSystemInterval) {
 			engineBlinkTimer = timer;
