@@ -9,7 +9,7 @@
 #include <Bang.h>
 #include <Pins.h>
 
-#if DEBUG == 1
+#if DEBUG >= 1
 	#include <Game/BangDebug.h>
 #endif
 #include <Game/AssettoCorsaCompetizione.h>
@@ -558,10 +558,10 @@ void loop() {
 	#if DEBUG == 1
 		loopCount++;
 		if (timer - debugTimer > 10000) {
-			debug("Loop: ");
-			debug(loopCount);
-			debug(" | CTRL: ");
-			debugln(controller.name);
+			bench("Loop: ");
+			bench(loopCount);
+			bench(" | CTRL: ");
+			benchln(controller.name);
 			loopCount = 0;
 			debugTimer = timer;
 		}

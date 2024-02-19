@@ -236,10 +236,10 @@ class AssettoCorsaCompetizione : public Game {
 					}
 				break;
 				case BANGED + R_ENCODER_M_UP:
-					this->fovUp(pressed, 5);
+					this->forceFeedbackUp(pressed, 1);
 				break;
 				case BANGED + R_ENCODER_M_DN:
-					this->fovDown(pressed, 5);
+					this->forceFeedbackDown(pressed, 1);
 				break;
 				default:
 					debug("Unknown button: ");
@@ -743,6 +743,24 @@ class AssettoCorsaCompetizione : public Game {
 				debugln("volumeDown: NUM MINUS");
 				*/
 				this->keyTap(KEYPAD_SUBTRACT, times); // 10
+			}
+		}
+		void forceFeedbackUp(bool pressed, char times = 1) {
+			// NUM MULTIPLY
+			if (pressed) {
+				/*
+				debugln("forceFeedbackUp: NUM MULTIPLY");
+				*/
+				this->keyTap(KEYPAD_8, times); // 10
+			}
+		}
+		void forceFeedbackDown(bool pressed, char times = 1) {
+			// NUM DIVIDE
+			if (pressed) {
+				/*
+				debugln("forceFeedbackDown: NUM DIVIDE");
+				*/
+				this->keyTap(KEYPAD_2, times); // 10
 			}
 		}
 };

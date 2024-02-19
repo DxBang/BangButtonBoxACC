@@ -45,6 +45,12 @@ class GameJoystick : public Game {
 				case R_ENCODER_L_UP:
 				case R_ENCODER_R_DN:
 				case R_ENCODER_R_UP:
+				case BANGED + R_ENCODER_M_DN:
+				case BANGED + R_ENCODER_M_UP:
+				case BANGED + R_ENCODER_L_DN:
+				case BANGED + R_ENCODER_L_UP:
+				case BANGED + R_ENCODER_R_DN:
+				case BANGED + R_ENCODER_R_UP:				
 					autoRelease = true;
 				break;
 				case B_NAV_UP:
