@@ -15,6 +15,7 @@
 #include <Game/AssettoCorsaCompetizione.h>
 #include <Game/GameJoystick.h>
 #include <Game/GameKeyboard.h>
+// #include <Game/MediaKeyboard.h>
 
 
 // prepare functions
@@ -133,6 +134,15 @@ Controller controllers[] = {
 		new Color(40, 1.0, 0.5),
 		new Color(180, 1.0, 0.5)
 	)
+	/*,
+	Controller(
+		"MediaKeyboard",
+		new MediaKeyboard(),
+		new Color(60, 1.0, 0.5),
+		new Color(30, 1.0, 0.5),
+		new Color(0, 1.0, 0.5)
+	)
+	*/
 };
 unsigned int controllerCount = sizeof(controllers) / sizeof(controllers[0]);
 Controller controller = controllers[controllerIndex];
