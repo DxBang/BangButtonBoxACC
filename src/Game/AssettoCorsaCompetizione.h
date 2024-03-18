@@ -175,7 +175,6 @@ class AssettoCorsaCompetizione : public Game {
 					else {
 						this->brakeBiasUp(pressed, 5);
 					}
-					
 				break;
 				case R_ENCODER_L_DN:
 					if (this->enhanced) {
@@ -388,7 +387,7 @@ class AssettoCorsaCompetizione : public Game {
 				*/
 				this->keyHold(KEY_LEFT_SHIFT);
 				this->keyTap(KEY_M);
-				this->keyRelease(KEY_LEFT_SHIFT);	
+				this->keyRelease(KEY_LEFT_SHIFT);
 			}
 		}
 		void navigationUp(bool pressed) {

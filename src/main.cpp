@@ -104,7 +104,7 @@ Joystick_ joystick(
 );
 
 Controller controllers[] = {
-	#if DEBUG == 1
+	#if DEBUG >= 1
 		Controller(
 			"Debug",
 			new BangDebug(),
@@ -316,7 +316,7 @@ void setHSL(HSL hsl) {
 	setRGB(color.getRGB());
 }
 void setBangLED(unsigned char value) {
-	analogWrite(LED_BANG_PIN, 
+	analogWrite(LED_BANG_PIN,
 		min(
 			max(
 				value,
@@ -327,7 +327,7 @@ void setBangLED(unsigned char value) {
 	);
 }
 void setLights(unsigned char value) {
-	analogWrite(LED_LIGHTS_PIN, 
+	analogWrite(LED_LIGHTS_PIN,
 		min(
 			max(
 				value,
@@ -565,7 +565,7 @@ void loop() {
 		break;
 	}
 	/* debug events */
-	#if DEBUG == 1
+	#if DEBUG >= 1
 		loopCount++;
 		if (timer - debugTimer > 10000) {
 			bench("Loop: ");
