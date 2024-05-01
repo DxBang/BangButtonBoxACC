@@ -1,3 +1,6 @@
+#ifndef SETTINGS_h
+	#include "Settings.h"
+#endif
 #ifndef BANG_h
 	#include "Bang.h"
 #endif

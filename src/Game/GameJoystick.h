@@ -1,3 +1,6 @@
+#ifndef SETTINGS_h
+	#include "Settings.h"
+#endif
 #ifndef BANG_h
 	#include "Bang.h"
 #endif
@@ -50,7 +53,7 @@ class GameJoystick : public Game {
 				case BANGED + R_ENCODER_L_DN:
 				case BANGED + R_ENCODER_L_UP:
 				case BANGED + R_ENCODER_R_DN:
-				case BANGED + R_ENCODER_R_UP:				
+				case BANGED + R_ENCODER_R_UP:
 					autoRelease = true;
 				break;
 				case B_NAV_UP:
@@ -116,7 +119,7 @@ class GameJoystick : public Game {
 			}
 			if (hatSwitch > 0) {
 				if (pressed) {
-					// check if 
+					// check if
 					debug("hatSwitch: ");
 					debug(hatSwitch);
 					debug(" direction: ");

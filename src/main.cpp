@@ -5,17 +5,17 @@
 #include <RotaryEncoder.h>
 #include <EEPROM.h>
 
-#include <Settings.h>
-#include <Bang.h>
-#include <Pins.h>
+#include "Settings.h"
+#include "Bang.h"
+#include "Pins.h"
 
 #if DEBUG >= 1
-	#include <Game/BangDebug.h>
+	#include "Game/BangDebug.h"
 #endif
-#include <Game/AssettoCorsaCompetizione.h>
-#include <Game/GameJoystick.h>
-#include <Game/GameKeyboard.h>
-// #include <Game/MediaKeyboard.h>
+#include "Game/AssettoCorsaCompetizione.h"
+#include "Game/GameJoystick.h"
+#include "Game/GameKeyboard.h"
+// #include "Game/MediaKeyboard.h"
 
 
 // prepare functions
@@ -104,7 +104,7 @@ Joystick_ joystick(
 );
 
 Controller controllers[] = {
-	#if DEBUG >= 1
+	#if DEBUG >= 2
 		Controller(
 			"Debug",
 			new BangDebug(),
@@ -479,7 +479,7 @@ void setup() {
 	delay(1000);
 	setLights(32);
 	delay(1000);
-	if (DEBUG) {
+	#if DEBUG >= 1
 		Serial.begin(115200);
 		setBangLED(128);
 		delay(100);
@@ -488,7 +488,7 @@ void setup() {
 		setBangLED(128);
 		delay(100);
 		setBangLED(32);
-	}
+	#endif
 	buttons.setDebounceTime(50);
 	debugln("Bang Evolution");
 	timer = millis();
