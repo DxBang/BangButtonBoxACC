@@ -29,7 +29,7 @@ void setBrightness(unsigned char value);
 void setRGB(unsigned char r, unsigned char g, unsigned char b);
 void setRGB(RGB rgb);
 void setHSL(HSL hsl);
-void setBangLED(unsigned char value);
+void setEngineLED(unsigned char value);
 void setLights(unsigned char value);
 
 void modeDefault();
@@ -315,7 +315,7 @@ void setHSL(HSL hsl) {
 	Color color = Color(hsl.h, hsl.s, hsl.l);
 	setRGB(color.getRGB());
 }
-void setBangLED(unsigned char value) {
+void setEngineLED(unsigned char value) {
 	analogWrite(LED_BANG_PIN,
 		min(
 			max(
@@ -340,7 +340,7 @@ void setLights(unsigned char value) {
 void setBrightness(unsigned char value) {
 	brightness = minMax(value, brightnessMinValue, brightnessMaxValue);
 	setLights(brightness);
-	setBangLED(brightness);
+	setEngineLED(brightness);
 	float l = (float) brightness / 255;
 	controller.color->setLightness(l);
 	controller.colorBanged->setLightness(l);
@@ -381,7 +381,7 @@ void wakeUp() {
 	RGB rgb = controller.color->getRGB();
 	setRGB(rgb.r, rgb.g, rgb.b);
 	setLights(brightness);
-	setBangLED(brightness);
+	setEngineLED(brightness);
 }
 void stayAwake() {
 	sleepTimer = timer;
@@ -397,7 +397,7 @@ void sleep() {
 	unsigned char b = l * 255;
 	setRGB(color.getRGB());
 	setLights(b);
-	setBangLED(b);
+	setEngineLED(b);
 }
 void hybridSleep() {
 	sleeping = 2;
@@ -405,7 +405,7 @@ void hybridSleep() {
 	color.setLightness(0);
 	setRGB(color.getRGB());
 	setLights(0);
-	setBangLED(0);
+	setEngineLED(0);
 }
 
 void bootAnimation() {
@@ -475,19 +475,19 @@ void setup() {
 	*/
 	bootAnimation();
 	delay(1000);
-	setBangLED(32);
+	setEngineLED(32);
 	delay(1000);
 	setLights(32);
 	delay(1000);
 	#if DEBUG >= 1
 		Serial.begin(115200);
-		setBangLED(128);
+		setEngineLED(128);
 		delay(100);
-		setBangLED(0);
+		setEngineLED(0);
 		delay(100);
-		setBangLED(128);
+		setEngineLED(128);
 		delay(100);
-		setBangLED(32);
+		setEngineLED(32);
 	#endif
 	buttons.setDebounceTime(50);
 	debugln("Bang Evolution");
@@ -509,9 +509,9 @@ void loop() {
 	timer = millis();
 	if (controllerReadyTimer) {
 		if (timer - controllerReadyTimer < controllerReadyDelay) {
-			setBangLED(0);
+			setEngineLED(0);
 			delay(50);
-			setBangLED(brightness);
+			setEngineLED(brightness);
 			delay(50);
 			return;
 		}
@@ -586,10 +586,12 @@ void loop() {
 		if (timer - bangBlinkTimer > feedbackInterval) {
 			bangBlinkTimer = timer;
 			if (feedbackBlink) {
-				setBangLED(brightness);
+				// setEngineLED(brightness);
+				setRGB(controller.color->getRGB());
 			}
 			else {
-				setBangLED(0);
+				// setEngineLED(0);
+				setRGB(controller.colorFeedback->getRGB());
 			}
 			feedbackBlink = !feedbackBlink;
 		}
@@ -598,7 +600,13 @@ void loop() {
 			feedbackTimer = 0;
 			bangBlinkTimer = 0;
 			feedbackBlink = false;
-			setBangLED(brightness);
+			// setEngineLED(brightness);
+			if (controller.isBanged()) {
+				setRGB(controller.colorBanged->getRGB());
+			}
+			else {
+				setRGB(controller.color->getRGB());
+			}
 		}
 	}
 	/* pulse event */
@@ -612,10 +620,12 @@ void loop() {
 		if (timer - bangBlinkTimer > pulseInterval) {
 			bangBlinkTimer = timer;
 			if (pulseBlink) {
-				setBangLED(brightness);
+				// setEngineLED(brightness);
+				setRGB(controller.color->getRGB());
 			}
 			else {
-				setBangLED(0);
+				// setEngineLED(0);
+				setRGB(controller.colorFeedback->getRGB());
 			}
 			pulseBlink = !pulseBlink;
 		}
@@ -623,7 +633,13 @@ void loop() {
 			controller.deEnhance();
 			bangBlinkTimer = 0;
 			pulseBlink = false;
-			setBangLED(brightness);
+			// setEngineLED(brightness);
+			if (controller.isBanged()) {
+				setRGB(controller.colorBanged->getRGB());
+			}
+			else {
+				setRGB(controller.color->getRGB());
+			}
 		}
 	}
 	/* bang events */
