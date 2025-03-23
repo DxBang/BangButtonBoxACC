@@ -11,6 +11,7 @@ class AssettoCorsaCompetizione : public Game {
 			isKeyboard = true;
 		}
 		void input(unsigned char input, bool pressed) override {
+			debug("ACC: ");
 			debug(input);
 			debug(" ");
 			debugln(pressed);
@@ -47,22 +48,28 @@ class AssettoCorsaCompetizione : public Game {
 					this->mfdStandings(pressed);
 				break;
 				case B_MFD_ELECTRONICS:
-					this->mfdElectronics(pressed);
+					this->indicatorRight(pressed);
+					// this->mfdElectronics(pressed);
 				break;
 				case B_NAV_SELECT:
-					this->select(pressed);
+					this->indicatorLeft(pressed);
+					// this->select(pressed);
 				break;
 				case B_NAV_UP:
-					this->navigationUp(pressed);
+					this->bonnet(pressed);
+					// this->navigationUp(pressed);
 				break;
 				case B_NAV_DOWN:
-					this->navigationDown(pressed);
+					this->cycleCamera(pressed);
+					// this->navigationDown(pressed);
 				break;
 				case B_NAV_LEFT:
-					this->navigationLeft(pressed);
+					this->cockpit(pressed);
+					// this->navigationLeft(pressed);
 				break;
 				case B_NAV_RIGHT:
-					this->navigationRight(pressed);
+					this->chase(pressed);
+					// this->navigationRight(pressed);
 				break;
 				// banged buttons
 				/*
@@ -124,22 +131,28 @@ class AssettoCorsaCompetizione : public Game {
 					this->dashboardDown(pressed);
 				break;
 				case BANGED + B_MFD_ELECTRONICS:
-					this->indicatorRight(pressed);
+					this->mfdElectronics(pressed);
+					// this->indicatorRight(pressed);
 				break;
 				case BANGED + B_NAV_SELECT:
-					this->indicatorLeft(pressed);
+					this->select(pressed);
+					// this->indicatorLeft(pressed);
 				break;
 				case BANGED + B_NAV_UP:
-					this->bonnet(pressed);
+					this->cycleOnboardCamera(pressed);
+					// this->bonnet(pressed);
 				break;
 				case BANGED + B_NAV_DOWN:
-					this->cycleCamera(pressed);
+					this->cycleTVCamera(pressed);
+					// this->cycleCamera(pressed);
 				break;
 				case BANGED + B_NAV_LEFT:
-					this->cockpit(pressed);
+					this->focusPreviousCar(pressed);
+					// this->cockpit(pressed);
 				break;
 				case BANGED + B_NAV_RIGHT:
-					this->chase(pressed);
+					this->focusNextCar(pressed);
+					// this->chase(pressed);
 				break;
 				// push rotary encoders
 				case B_ENCODER_M_PH:
@@ -149,7 +162,7 @@ class AssettoCorsaCompetizione : public Game {
 				case BANGED + B_ENCODER_L_PH:
 				case BANGED + B_ENCODER_R_PH:
 					if (pressed) {
-						this->enhance();
+						this->toggleEnhance();
 					}
 				break;
 				// rotary encoders
@@ -173,7 +186,7 @@ class AssettoCorsaCompetizione : public Game {
 				// left
 				case R_ENCODER_L_UP:
 					if (this->enhanced) {
-						this->brakeBiasUp(pressed, 10);
+						this->brakeBiasUp(pressed, 15);
 					}
 					else {
 						this->brakeBiasUp(pressed, 5);
@@ -181,7 +194,7 @@ class AssettoCorsaCompetizione : public Game {
 				break;
 				case R_ENCODER_L_DN:
 					if (this->enhanced) {
-						this->brakeBiasDown(pressed, 10);
+						this->brakeBiasDown(pressed, 15);
 					}
 					else {
 						this->brakeBiasDown(pressed, 5);
@@ -584,6 +597,49 @@ class AssettoCorsaCompetizione : public Game {
 				debugln("cycleCamera");
 				*/
 				this->keyTap(KEY_F1);
+			}
+		}
+		void cycleTVCamera(bool pressed) {
+			// F3
+			if (pressed) {
+				/*
+				debugln("cycleTVCamera");
+				*/
+				this->keyTap(KEY_F3);
+			}
+		}
+		void cycleOnboardCamera(bool pressed) {
+			// F6
+			if (pressed) {
+				/*
+				debugln("cycleOnboardCamera");
+				*/
+				this->keyTap(KEY_F6);
+			}
+		}
+		void focusPreviousCar(bool pressed) {
+			// SHIFT + Left Arrow
+			if (pressed) {
+				this->keyHold(KEY_LEFT_SHIFT);
+				this->keyTap(KEY_LEFT_ARROW);
+				this->keyRelease(KEY_LEFT_SHIFT);
+			}
+		}
+		void focusNextCar(bool pressed) {
+			// SHIFT + Right Arrow
+			if (pressed) {
+				this->keyHold(KEY_LEFT_SHIFT);
+				this->keyTap(KEY_RIGHT_ARROW);
+				this->keyRelease(KEY_LEFT_SHIFT);
+			}
+		}
+		void freeCamera(bool pressed) {
+			// F7
+			if (pressed) {
+				/*
+				debugln("freeCamera");
+				*/
+				this->keyTap(KEY_F7);
 			}
 		}
 		void cycleDriverWheel(bool pressed) {

@@ -163,8 +163,10 @@ class Game {
 		Game() {};
 		virtual void input(unsigned char input, bool pressed) {};
 		virtual void begin() {
-			this->deBang();
-			this->deEnhance();
+			// this->deBang();
+			// this->deEnhance();
+			debug("enhanced: ");
+			debugln(this->enhanced);
 			if (this->isKeyboard) {
 				Keyboard.begin();
 			}
@@ -173,8 +175,8 @@ class Game {
 			}
 		};
 		virtual void end() {
-			this->deBang();
-			this->deEnhance();
+			// this->deBang();
+			// this->deEnhance();
 			if (this->isKeyboard) {
 				Keyboard.end();
 			}
@@ -192,13 +194,23 @@ class Game {
 			return this->banged;
 		};
 		virtual void enhance() {
+			debugln("enhance");
 			this->enhanced = true;
 			enhancedEncoderTimer = millis();
 		};
 		virtual void deEnhance() {
+			debugln("deEnhance");
 			this->enhanced = false;
 			enhancedEncoderTimer = 0;
 		};
+		virtual void toggleEnhance() {
+			debugln("toggleEnhance");
+			if (this->enhanced) {
+				this->deEnhance();
+			} else {
+				this->enhance();
+			}
+		}
 		/* keybaord */
 		void key(KeyboardKeycode keyChar, bool pressed) {
 			if (pressed) {
@@ -466,6 +478,12 @@ class Controller {
 		void deEnhance() {
 			this->game->deEnhance();
 		};
+		bool isEnhanced() {
+			if (this->game->enhanced) {
+				return true;
+			}
+			return false;
+		}
 		Color* getColor() {
 			return this->color;
 		};

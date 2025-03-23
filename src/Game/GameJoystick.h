@@ -55,6 +55,9 @@ class GameJoystick : public Game {
 				case BANGED + R_ENCODER_R_DN:
 				case BANGED + R_ENCODER_R_UP:
 					autoRelease = true;
+					if (pressed) {
+						this->toggleEnhance();
+					}
 				break;
 				case B_NAV_UP:
 					hatSwitch = 1;

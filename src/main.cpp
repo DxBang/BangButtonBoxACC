@@ -118,21 +118,21 @@ Controller controllers[] = {
 		new AssettoCorsaCompetizione(),
 		new Color(120, 1.0, 0.5), // default hsl
 		new Color(180, 1.0, 0.5), // pressed hsl
-		new Color(240, 1.0, 0.5) // banged hsl
+		new Color(60, 1.0, 0.5) // banged hsl
 	),
 	Controller(
 		"Joystick",
 		new GameJoystick(&joystick),
 		new Color(200, 1.0, 0.5),
-		new Color(250, 1.0, 0.5),
-		new Color(300, 1.0, 0.5)
+		new Color(260, 1.0, 0.5),
+		new Color(140, 1.0, 0.5)
 	),
 	Controller(
 		"Keyboard",
 		new GameKeyboard(),
-		new Color(24, 1.0, 0.5),
-		new Color(40, 1.0, 0.5),
-		new Color(180, 1.0, 0.5)
+		new Color(30, 1.0, 0.5),
+		new Color(90, 1.0, 0.5),
+		new Color(330, 1.0, 0.5)
 	)
 	/*,
 	Controller(
@@ -570,6 +570,8 @@ void loop() {
 		if (timer - debugTimer > 10000) {
 			bench("Loop: ");
 			bench(loopCount);
+			bench(" | Enhance: ");
+			bench(controller.isEnhanced());
 			bench(" | CTRL: ");
 			benchln(controller.name);
 			loopCount = 0;
@@ -648,7 +650,7 @@ void loop() {
 			bangedBlink = !bangedBlink;
 		}
 	}
-	/* prepare tp emter system */
+	/* prepare to enter system */
 	if (prepareSystemTimer && timer - prepareSystemTimer > prepareSystemDuration && !activateSystemTimer) {
 		modeActivateSystem();
 	}

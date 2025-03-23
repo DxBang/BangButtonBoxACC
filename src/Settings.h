@@ -24,20 +24,16 @@
 #endif
 
 unsigned char controllerIndex = 0;
-
 bool encoderChanged = false;
-
 
 unsigned long timer = 0;
 #if DEBUG
 	unsigned long debugTimer = 0;
 	unsigned long loopCount = 0;
 #endif
+
 unsigned char feedbackCount = 0;
-
-
 bool bangTimedMode = false; // true = timed, false = toggle
-
 bool feedbackBlink = false;
 bool pulseBlink = false;
 bool bangedBlink = false;
@@ -51,7 +47,7 @@ unsigned long feedbackTimer = 0;
 const unsigned char feedbackInterval = 50;
 const unsigned short feedbackDuration = 500;
 
-const unsigned short pulseInterval = 500;
+const unsigned short pulseInterval = 200;
 
 unsigned long bangedTimer = 0;
 // unsigned long bangedBlinkTimer = 0;
@@ -74,16 +70,16 @@ const unsigned short controllerReadyDelay = 1000;
 
 unsigned char brightness = 60; // for LED_LIGHTS_PIN, LED_BANG_PIN
 unsigned char brightnessMinValue = 0; // for LED_LIGHTS_PIN, LED_BANG_PIN, LED_R_PIN, LED_G_PIN, LED_B_PIN
-unsigned char brightnessMaxValue = 120;	// for LED_LIGHTS_PIN, LED_BANG_PIN. LED_R_PIN, LED_G_PIN, LED_B_PIN
-unsigned char brightnessStep = 1; // for LED_LIGHTS_PIN, LED_BANG_PIN, LED_R_PIN, LED_G_PIN, LED_B_PIN
+unsigned char brightnessMaxValue = 140;	// for LED_LIGHTS_PIN, LED_BANG_PIN. LED_R_PIN, LED_G_PIN, LED_B_PIN
+unsigned char brightnessStep = 10; // for LED_LIGHTS_PIN, LED_BANG_PIN, LED_R_PIN, LED_G_PIN, LED_B_PIN
 
 unsigned char sleeping = 0;
 unsigned long sleepTimer = 0;
 
 #if DEBUG >= 1
-	const unsigned long sleepDelay = 5000;
-	const unsigned long hybridSleepDelay = 20000;
+	const unsigned long sleepDelay = 600000;
+	const unsigned long hybridSleepDelay = 1200000;
 #else
-	unsigned long sleepDelay = 900000; // 10 mins
-	unsigned long hybridSleepDelay = 1800000; // 30 mins
+	unsigned long sleepDelay = 1800000; // 30 mins
+	unsigned long hybridSleepDelay = 3600000; // 60 mins
 #endif
